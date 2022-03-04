@@ -20,9 +20,13 @@ class HelloApplication : public Wt::WApplication
 public:
   HelloApplication(const Wt::WEnvironment& env);
 
+  HelloApplication(const HelloApplication& env) = delete;
+
+  HelloApplication& operator=(const HelloApplication& env) = delete;
+
 private:
-  Wt::WLineEdit *nameEdit_;
-  Wt::WText     *greeting_;
+  Wt::WLineEdit* nameEdit_;
+  Wt::WText* greeting_;
 
   void greet();
 };
@@ -32,23 +36,25 @@ private:
  * the initial request. It must be passed to the WApplication
  * constructor so it is typically also an argument for your custom
  * application constructor.
-*/
-HelloApplication::HelloApplication(const Wt::WEnvironment& env)
-  : WApplication(env)
+ */
+HelloApplication::HelloApplication(const Wt::WEnvironment& env) :
+    WApplication(env),
+    nameEdit_(nullptr),
+    greeting_(nullptr)
 {
-  setTitle("Hello world");                            // application title
+  setTitle("Hello world");  // application title
 
-  root()->addWidget(std::make_unique<Wt::WText>("Your name, please ? ")); // show some text
+  root()->addWidget(std::make_unique<Wt::WText>("Your name, please ? "));  // show some text
 
-  nameEdit_ = root()->addWidget(std::make_unique<Wt::WLineEdit>()); // allow text input
-  nameEdit_->setFocus();                              // give focus
+  nameEdit_ = root()->addWidget(std::make_unique<Wt::WLineEdit>());  // allow text input
+  nameEdit_->setFocus();                                             // give focus
 
   auto button = root()->addWidget(std::make_unique<Wt::WPushButton>("Greet me."));
-                                                      // create a button
-  button->setMargin(5, Wt::Side::Left);                   // add 5 pixels margin
+  // create a button
+  button->setMargin(5, Wt::Side::Left);  // add 5 pixels margin
 
-  root()->addWidget(std::make_unique<Wt::WBreak>());    // insert a line break
-  greeting_ = root()->addWidget(std::make_unique<Wt::WText>()); // empty text
+  root()->addWidget(std::make_unique<Wt::WBreak>());             // insert a line break
+  greeting_ = root()->addWidget(std::make_unique<Wt::WText>());  // empty text
 
   /*
    * Connect signals with slots
@@ -66,8 +72,8 @@ HelloApplication::HelloApplication(const Wt::WEnvironment& env)
   /*
    * - using a lambda:
    */
-  button->clicked().connect([=]() { 
-      std::cerr << "Hello there, " << nameEdit_->text() << std::endl;
+  button->clicked().connect([this]() {
+    std::cerr << "Hello there, " << nameEdit_->text() << std::endl;
   });
 }
 
@@ -79,7 +85,7 @@ void HelloApplication::greet()
   greeting_->setText("Hello there, " + nameEdit_->text());
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   /*
    * Your main method may set up some shared resources, but should then
@@ -92,7 +98,7 @@ int main(int argc, char **argv)
    * support. The function should return a newly instantiated application
    * object.
    */
-  return Wt::WRun(argc, argv, [](const Wt::WEnvironment &env) {
+  return Wt::WRun(argc, argv, [](const Wt::WEnvironment& env) {
     /*
      * You could read information from the environment to decide whether
      * the user has permission to start a new application
