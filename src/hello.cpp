@@ -19,16 +19,12 @@ class HelloApplication : public Wt::WApplication
 {
 public:
   HelloApplication(const Wt::WEnvironment& env);
-
   HelloApplication(const HelloApplication& env) = delete;
-
   HelloApplication& operator=(const HelloApplication& env) = delete;
 
 private:
-  Wt::WLineEdit* nameEdit_;
-  Wt::WText* greeting_;
-
-  void greet();
+  Wt::WLineEdit* mNameEdit;
+  Wt::WText* mGreeting;
 };
 
 /*
@@ -39,50 +35,31 @@ private:
  */
 HelloApplication::HelloApplication(const Wt::WEnvironment& env) :
     WApplication(env),
-    nameEdit_(nullptr),
-    greeting_(nullptr)
+    mNameEdit(nullptr),
+    mGreeting(nullptr)
 {
-  setTitle("Hello world");  // application title
+  setTitle("Web Remote");  // application title
 
-  root()->addWidget(std::make_unique<Wt::WText>("Your name, please ? "));  // show some text
+  //  root()->addWidget(std::make_unique<Wt::WText>("Your name, please ? "));  // show some text
+  //
+  //  mNameEdit = root()->addWidget(std::make_unique<Wt::WLineEdit>());  // allow text input
+  //  mNameEdit->setFocus();                                             // give focus
+  //  root()->addWidget(std::make_unique<Wt::WBreak>());             // insert a line break
 
-  nameEdit_ = root()->addWidget(std::make_unique<Wt::WLineEdit>());  // allow text input
-  nameEdit_->setFocus();                                             // give focus
-
-  auto button = root()->addWidget(std::make_unique<Wt::WPushButton>("Greet me."));
-  // create a button
-  button->setMargin(5, Wt::Side::Left);  // add 5 pixels margin
-
-  root()->addWidget(std::make_unique<Wt::WBreak>());             // insert a line break
-  greeting_ = root()->addWidget(std::make_unique<Wt::WText>());  // empty text
-
-  /*
-   * Connect signals with slots
-   *
-   * - simple Wt-way: specify object and method
-   */
-  button->clicked().connect(this, &HelloApplication::greet);
-
-  /*
-   * - using an arbitrary function object, e.g. useful to bind
-   *   values with std::bind() to the resulting method call
-   */
-  nameEdit_->enterPressed().connect(std::bind(&HelloApplication::greet, this));
-
-  /*
-   * - using a lambda:
-   */
-  button->clicked().connect([this]() {
-    std::cerr << "Hello there, " << nameEdit_->text() << std::endl;
+  auto screenOffButton = root()->addWidget(std::make_unique<Wt::WPushButton>("Screen off"));
+  screenOffButton->clicked().connect([this]() {
+    std::cout << "Action of some sort" << std::endl;
+    system("xset dpms force off");
   });
-}
 
-void HelloApplication::greet()
-{
-  /*
-   * Update the text, using text input into the nameEdit_ field.
-   */
-  greeting_->setText("Hello there, " + nameEdit_->text());
+  auto muterButton = root()->addWidget(std::make_unique<Wt::WPushButton>("unmute"));
+  muterButton->clicked().connect([this, muterButton]() {
+    auto state = muterButton->text().toUTF8();
+    std::string cmd = "amixer set Master " + state;
+    state = (state == "unmute") ? "mute" : "unmute";
+    muterButton->setText(state);
+    system(cmd.c_str());
+  });
 }
 
 int main(int argc, char** argv)
