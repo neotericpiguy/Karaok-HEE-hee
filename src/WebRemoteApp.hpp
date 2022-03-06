@@ -1,33 +1,37 @@
 #ifndef WEBREMOTEAPP_HPP
 #define WEBREMOTEAPP_HPP
 
-/*
- * Copyright (C) 2008 Emweb bv, Herent, Belgium.
- *
- * See the LICENSE file for terms of use.
- */
-
 #include <Wt/WApplication.h>
-#include <Wt/WBreak.h>
-#include <Wt/WContainerWidget.h>
-#include <Wt/WLineEdit.h>
-#include <Wt/WPushButton.h>
-#include <Wt/WText.h>
+#include <Wt/WProgressBar.h>
 
-/*
- * A simple hello world application class which demonstrates how to react
- * to events, read input, and give feed-back.
- */
+#include "Authenticator.hpp"
+#include "DlQueue.hpp"
+#include "Library.hpp"
+#include "Playlist.hpp"
+#include "User.hpp"
+
 class WebRemoteApp : public Wt::WApplication
 {
 public:
-  WebRemoteApp(const Wt::WEnvironment& env);
+  WebRemoteApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queue, Library& library, Authenticator& authenticator, Playlist& playlist);
   WebRemoteApp(const WebRemoteApp& env) = delete;
   WebRemoteApp& operator=(const WebRemoteApp& env) = delete;
 
+  void showLoginDialog();
+  void showRegisterDialog();
+
+protected:
+  static const std::string kCookieKey;
+  static const int kMaxAge;
+
 private:
-  Wt::WLineEdit* mNameEdit;
-  Wt::WText* mGreeting;
+  YoutubeDl::DlQueue& mDlQueue;
+  Library& mLibrary;
+  Authenticator& mAuthenticator;
+  Playlist& mPlaylist;
+  User* mUser;
+  Wt::WDialog* mDialog;
+  Wt::WMenuItem* mLoginItem;
 };
 
 #endif

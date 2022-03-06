@@ -1,32 +1,87 @@
 BUILD_PATH=build
+EXE=webRemote
+PORT=18080
 
-VERSION            = $(shell git describe --tags --abbrev=0)
+VERSION            = $(shell git describe --tags)
 HASH               = $(shell git rev-parse --short HEAD)
 DMRCONFIG_VERSION  = $(shell git submodule status)
 GITCOUNT           = $(shell git rev-list HEAD --count)
 
-CXXFLAGS=-std=c++20 -Weffc++
+CFLAGS   ?= -g -O -Wall -Werror -fPIC -MMD -fcommon
+CFLAGS   += -DVERSION='"$(VERSION)"'
 
-SRCS=$(shell find src/ -name '*.cpp')
+EFFCFLAGS+=-Wall
+EFFCFLAGS+=-Wextra -Werror -Wshadow 
+EFFCFLAGS+=-Weffc++ # extreme OCD C++ not recommended
+#warn the user if a class with virtual functions has a non-virtual destructor.
+#This helps catch hard to track down memory errors
+EFFCFLAGS+=-Wnon-virtual-dtor
+# EFFCFLAGS+=-Wold-style-cast #bsonheader has oldcasting
+EFFCFLAGS+=-Wcast-align
+EFFCFLAGS+=-Wunused
+EFFCFLAGS+=-Woverloaded-virtual
+#warn if you overload (not override) a virtual function
+EFFCFLAGS+=-pedantic
+
+CFLAGS   += -std=c++20 $(EFFCFLAGS)
+CXXFLAGS += $(CFLAGS)
+LIBS     += -lwthttp -lwt
+
+#SRCS=$(shell find src/ -name '*.cpp')
+SRCS=$(wildcard src/*.cpp)
 OBJS=$(addprefix $(BUILD_PATH)/,$(SRCS:.cpp=.o))
+DEPS=$(OBJS:%.o=%.d) 
 
-$(info $$SRCS       = [${SRCS}])
-$(info $$OBJS       = [${OBJS}])
-$(info $$VERSION    = [${VERSION}])
-$(info $$BUILD_PATH = [${BUILD_PATH}])
+COMMON_PATH=src/common
+COMMON_INCPATHS=$(addprefix -I,$(shell find $(COMMON_PATH) -type d))
+COMMON_SRCS=$(wildcard $(COMMON_PATH)/*/*.cpp $(COMMON_PATH)/*.cpp)
+COMMON_OBJS=$(addprefix $(BUILD_PATH)/,$(COMMON_SRCS:.cpp=.o))
+DEPS+=$(COMMON_OBJS:%.o=%.d) 
+COMMON_LIB=$(BUILD_PATH)/$(COMMON_PATH)/libcommon.a
+
+WIDGETS_PATH=src/widgets
+WIDGETS_INCPATHS=$(addprefix -I,$(shell find $(WIDGETS_PATH) -type d))
+WIDGETS_SRCS=$(wildcard $(WIDGETS_PATH)/*/*.cpp $(WIDGETS_PATH)/*.cpp)
+WIDGETS_OBJS=$(addprefix $(BUILD_PATH)/,$(WIDGETS_SRCS:.cpp=.o))
+DEPS+=$(WIDGETS_OBJS:%.o=%.d) 
+WIDGETS_LIB=$(BUILD_PATH)/$(WIDGETS_PATH)/libWidgets.a
+
+$(info $$SRCS         = [${SRCS}])
+$(info $$OBJS         = [${OBJS}])
+$(info $$COMMON_SRCS  = [${COMMON_SRCS}])
+$(info $$COMMON_OBJS  = [${COMMON_OBJS}])
+$(info $$WIDGETS_SRCS = [${WIDGETS_SRCS}])
+$(info $$WIDGETS_OBJS = [${WIDGETS_OBJS}])
+$(info $$VERSION      = [${VERSION}])
+$(info $$HASH         = [${HASH}])
+$(info $$GITCOUNT     = [${GITCOUNT}])
+$(info $$BUILD_PATH   = [${BUILD_PATH}])
+$(info $$DEPS         = [${DEPS}])
 
 .phony: run
 
+all: $(BUILD_PATH)/$(EXE)
+
 $(BUILD_PATH)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CC) -o $@ -c $(CFLAGS) $(LIBUSB_INCPATHS) $<
+	$(CC) -o $@ -c $(CFLAGS) $(LIBUSB_INCPATHS) $(COMMON_INCPATHS) $(WIDGETS_INCPATHS) $<
 
-./build/hello: $(OBJS)
-	@mkdir -p build
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lwthttp -lwt
+$(COMMON_LIB): $(COMMON_OBJS)
+	ar -rcs $@ $^
 
-run: build/hello
-	./build/hello --docroot=./ --http-listen=0.0.0.0:18080
+$(WIDGETS_LIB): $(WIDGETS_OBJS)
+	ar -rcs $@ $^
+
+$(BUILD_PATH)/$(EXE): $(OBJS) $(COMMON_LIB) $(WIDGETS_LIB)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+
+run: $(BUILD_PATH)/$(EXE)
+	./$^  --docroot="/usr/share/Wt"  --http-listen=0.0.0.0:$(PORT) -c wt_config.xml
+
+server: $(BUILD_PATH)/$(EXE)
+	./$^ server
 
 clean:
-	-rm -rf build
+	-rm -rf $(BUILD_PATH)
+
+-include $(DEPS)

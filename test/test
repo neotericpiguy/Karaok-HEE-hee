@@ -1,0 +1,112 @@
+#!/bin/bash
+
+queryTest() {
+  echo -n "$1 = "
+  echo "$1" | nc -w1 localhost 18081
+}
+
+TEST() {
+  local scpi=${1?"SCPI"}
+  local comp=${2?"comparison"}
+  local expectedVal=${3?"expected value"}
+
+  val=`echo "$scpi" | nc -w1 localhost 18081`
+  if [ "$val" "$comp" "$expectedVal" ]; then
+    echo -e "\e[032m[PASS]\e[0m $scpi $comp $expectedVal "
+  else
+    echo -e "\e[031m[FAIL]\e[0m $scpi $comp $val expected $expectedVal "
+  fi
+}
+
+functional() {
+#    queryTest "MAXTHREADS 4"
+#    queryTest "MAXTHREADS 2"
+#    queryTest "MAXOUTPUTDIRSIZE 101000000"
+#    queryTest "MAXOUTPUTDIRSIZE 100000000"
+#    queryTest "DLQUEUE:MAXTHREADS 4"
+    TEST "DLQUEUE:MAXTHREADS 4" == 4
+    TEST "DLQUEUE:MAXTHREADS?" == 4
+    queryTest "DLQUEUE:THREADS?"
+    queryTest "DLQUEUE:QUEUE?"
+    queryTest "DLQUEUE:OUTPUTDIR?"
+    queryTest "DLQUEUE:OUTPUTDIRSIZE?"
+    queryTest "DLQUEUE:MAXOUTPUTDIRSIZE?"
+    queryTest "DLQUEUE:OLDESTDOWNLOAD?"
+    echo
+    echo "DLQUEUE:LIST?" | nc -w 1 localhost 18081
+}
+
+scpi() {
+    queryTest "DLQUEUE:MAXTHREADS?"
+    queryTest "DLQUEUE:MAXTHREADS asdf"
+    queryTest "DLQUEUE:MXTHREADS 1 12  3 4 "
+    queryTest "TEST:DLQUEUE:MXTHREADS 1 12  3 4 "
+}
+
+library() {
+    queryTest "LIBRARY:PRINT"
+    queryTest "LIBRARY:CLEAR"
+    queryTest "LIBRARY:PRINT"
+    queryTest "LIBRARY:LOAD"
+    queryTest "LIBRARY:PRINT"
+    queryTest "LIBRARY:SAVE"
+    queryTest "LIBRARY:SHA build/webRemote"
+    queryTest "LIBRARY:SHA"
+    queryTest "LIBRARY:SHA /mnt/sdb/archive/karaoke/The_Guess_Who_-_These_Eyes_Karaoke_Version.webm"
+    queryTest "LIBRARY:ADD /mnt/sdb/archive/karaoke/The_Guess_Who_-_These_Eyes_Karaoke_Version.webm"
+    queryTest "LIBRARY:PRINT"
+    queryTest "LIBRARY:ADD /mnt/sdb/archive/karaoke/Celine_Dion_-_My_Heart_Will_Go_On_Karaoke_Version.webm"
+#    queryTest "LIBRARY:PRINT"
+#    queryTest "LIBRARY:RM f9bcb6e34bf6697beaa0aab90c2002ccf4df026acb19096f35c9d29b3ee1b92e"
+#    queryTest "LIBRARY:RM fasdf6e34bf6697beaa0aab90c2002ccf4df026acb19096f35c9d29b3ee1b92e"
+#    queryTest "LIBRARY:PRINT"
+#    queryTest "LIBRARY:ADD /mnt/sdb/archive/karaoke/The_Guess_Who_-_These_Eyes_Karaoke_Version.webm"
+    queryTest "LIBRARY:FIND Eyes"
+    queryTest "LIBRARY:FIND back"
+    queryTest "LIBRARY:FIND eyes"
+    queryTest "LIBRARY:FIND guess"
+    queryTest "LIBRARY:FIND GuEss"
+#    queryTest "LIBRARY:FIND Kara"
+#    queryTest "LIBRARY:ADD /mnt/sdb/archive/karaoke/George_Michael_-_Careless_Whisper_Karaoke_Version.webm"
+    queryTest "LIBRARY:PRINT"
+    queryTest "LIBRARY:SAVE"
+}
+
+reloadLibrary() {
+  find /mnt/sdb/archive/karaoke -iname '*' |egrep -v part | while read line ; do 
+    echo $line
+    echo -e "LIBRARY:ADD $line" | nc localhost 18081 
+  done
+#  queryTest "LIBRARY:SAVE"
+}
+
+playlist() {
+  queryTest "PLAYLIST:PRINT"
+  queryTest "PLAYLIST:LOAD"
+  queryTest "PLAYLIST:ADD 07f487a0b5662f5f9889cf0e0698b8bf0655a5048284205988cef34148d44256 ThisIsJonathan"
+  queryTest "PLAYLIST:PRINT"
+  queryTest "PLAYLIST:NEXTSONG"
+}
+
+auth() {
+  queryTest "AUTH:PRINT"
+  queryTest "AUTH:LOAD"
+  queryTest "AUTH:PRINT"
+  queryTest "AUTH:ADD testUser password"
+  queryTest "AUTH:ADD testUser2 drowssap"
+  queryTest "AUTH:PRINT"
+  TEST "AUTH:ADD bob bob" == 1
+  queryTest "AUTH:SAVE"
+  TEST "AUTH:CLEAR" == 1
+  TEST "AUTH:ADD testUser3 bob" == 1
+  TEST "AUTH:PRINT" == 1
+  TEST "AUTH:AUTH testUser4 drsdffdsaowssap" == 0
+  TEST "AUTH:AUTH testUser3 ersdffdsaowssap" == 0
+  TEST "AUTH:AUTH testUser3 bob" == 1
+}
+
+main () {
+  $1 ${@:2}
+}
+
+main $@
