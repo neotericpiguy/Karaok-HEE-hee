@@ -17,13 +17,9 @@ public:
   DittyWidget& operator=(const DittyWidget& env) = delete;
   ~DittyWidget();
 
-  void update();
 
 private:
   const Ditty& mInfo;
-  Wt::WText* statsText;
-  Wt::WText* linkText;
-  Wt::WText* stateText;
 };
 
 #endif
