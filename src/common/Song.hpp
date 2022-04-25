@@ -9,7 +9,6 @@
 class Song : public CsvDb::Record
 {
 public:
-  // TODO make a vector or map somehow to be able to iterate through
   static const std::string kID;
   static const std::string kTITLE;
   static const std::string kARTIST;

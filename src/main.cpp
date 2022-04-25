@@ -7,8 +7,6 @@
 #include "TcpServer.hpp"
 #include "WebRemoteApp.hpp"
 
-// TODO paramaterize port to listen for scpis
-
 int main(int argc, char** argv)
 {
   srand(time(NULL));
