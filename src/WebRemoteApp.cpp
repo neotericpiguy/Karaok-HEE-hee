@@ -30,7 +30,7 @@ WebRemoteApp::WebRemoteApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queu
     mDialog(nullptr),
     mLoginItem(nullptr)
 {
-  setTitle("Web Remote");  // application title
+  setTitle("Karaok-HEE-hee");  // application title
 
   auto theme = std::make_shared<Wt::WBootstrap5Theme>();
   setTheme(theme);
