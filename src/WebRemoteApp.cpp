@@ -50,6 +50,7 @@ WebRemoteApp::WebRemoteApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queu
   auto leftMenu = std::make_unique<Wt::WMenu>(contentsStack);
   auto leftMenu_ = navigation->addMenu(std::move(leftMenu));
 
+  // TODO find a better way besides double pointers
   leftMenu_->addItem("Playlist", std::make_unique<PlaylistWidget>(playlist, &mUser));
   leftMenu_->addItem("Library", std::make_unique<LibraryWidget>(library, playlist, &mUser));
   leftMenu_->addItem("Download Queue", std::make_unique<DlQueueWidget>(queue));
@@ -59,12 +60,6 @@ WebRemoteApp::WebRemoteApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queu
   auto editPtr = std::make_unique<Wt::WLineEdit>();
   auto edit = editPtr.get();
   edit->setPlaceholderText("Enter a search item");
-
-  // edit->enterPressed().connect([=] {
-  //   leftMenu_->select(2);  // is the index of the "Sales"
-  //   searchResult_->setText(Wt::WString("Nothing found for {1}.")
-  //                              .arg(edit->text()));
-  // });
 
   // navigation->addSearch(std::move(editPtr));
 

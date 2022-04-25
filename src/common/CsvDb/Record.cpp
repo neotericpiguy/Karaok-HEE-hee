@@ -2,10 +2,6 @@
 
 #include "StringThings.hpp"
 
-// TODO make a
-// CsvDb, library, and Record
-// Library and Song
-
 namespace CsvDb {
 Record::Record() :
     mFields()
