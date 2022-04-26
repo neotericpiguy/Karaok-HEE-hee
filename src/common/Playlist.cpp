@@ -4,10 +4,20 @@
 
 #include "StringThings.hpp"
 
+const std::map<Playlist::State, std::string> Playlist::stateMap = {
+    {Playlist::UNKNOWN, "UNKNOWN"},
+    {Playlist::INIT, "INIT"},
+    {Playlist::PLAYING, "PLAYING"},
+    {Playlist::PAUSE, "PAUSE"},
+};
+
 Playlist::Playlist(const Library& library) :
     CsvDb::Table("playlist.csv", Ditty::kORDER),
     mLibrary(library),
-    mLatestEnum(0)
+    mLatestEnum(0),
+    mCurrentState(UNKNOWN),
+    mCurrentSongPath(""),
+    mCurrentPoster("")
 {
   setNewRecordFunc([]() -> CsvDb::Record* {
     return new Ditty;
@@ -66,6 +76,30 @@ size_t Playlist::getLatestEnum() const
 void Playlist::setLatestEnum(size_t val)
 {
   mLatestEnum = val;
+}
+Playlist::State Playlist::getCurrentState() const
+{
+  return mCurrentState;
+}
+void Playlist::setCurrentState(Playlist::State val)
+{
+  mCurrentState = val;
+}
+const std::string& Playlist::getCurrentSongPath() const
+{
+  return mCurrentSongPath;
+}
+void Playlist::setCurrentSongPath(const std::string& val)
+{
+  mCurrentSongPath = val;
+}
+const std::string& Playlist::getCurrentPoster() const
+{
+  return mCurrentPoster;
+}
+void Playlist::setCurrentPoster(const std::string& val)
+{
+  mCurrentPoster = val;
 }
 
 size_t Playlist::loadTable()

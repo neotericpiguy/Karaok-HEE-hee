@@ -12,10 +12,6 @@
 
 #include "StringThings.hpp"
 
-PlaylistWidget::State PlaylistWidget::mCurrentState = PlaylistWidget::UNKNOWN;
-std::string PlaylistWidget::mCurrentSongPath = "";
-std::string PlaylistWidget::mCurrentPoster = "";
-
 PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
     mUser(user),
     mDittyWidgetMap(),
@@ -24,7 +20,7 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
     mVideoStarted(false),
     mPoster(""),
     mSongPath(""),
-    mState(UNKNOWN)
+    mState(Playlist::UNKNOWN)
 {
   auto container = this;
 
@@ -72,40 +68,40 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
 
         mVideo->playbackStarted().connect([this] {});
         mVideo->ended().connect([this] {
-          if (mCurrentState == INIT)
+          if (mPlaylist.getCurrentState() == Playlist::Playlist::INIT)
             return;
 
-          mCurrentState = INIT;
+          mPlaylist.setCurrentState(Playlist::Playlist::INIT);
           updateQueue();
         });
 
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
-          if (mCurrentState == INIT)
+          if (mPlaylist.getCurrentState() == Playlist::Playlist::INIT)
             return;
 
-          mCurrentState = INIT;
+          mPlaylist.setCurrentState(Playlist::Playlist::INIT);
           updateQueue();
         });
         insertWidget(1, std::move(nextPushButton));
 
         auto pausePushButton = std::make_unique<Wt::WPushButton>("Pause");
-        pausePushButton->clicked().connect([this] { mCurrentState = PAUSE; });
+        pausePushButton->clicked().connect([this] { mPlaylist.setCurrentState(Playlist::Playlist::PAUSE); });
         insertWidget(1, std::move(pausePushButton));
 
         auto startPushButton = std::make_unique<Wt::WPushButton>("Start");
-        startPushButton->clicked().connect([this] { mCurrentState = PLAYING; });
+        startPushButton->clicked().connect([this] { mPlaylist.setCurrentState(Playlist::Playlist::PLAYING); });
         insertWidget(1, std::move(startPushButton));
 
-        if (mCurrentState != INIT && mCurrentSongPath.empty())
+        if (mPlaylist.getCurrentState() != Playlist::Playlist::INIT && mPlaylist.getCurrentSongPath().empty())
         {
-          mCurrentState = INIT;
+          mPlaylist.setCurrentState(Playlist::Playlist::INIT);
           updateQueue(false);
         }
       }
 
-      if (mState != mCurrentState)
-        setState(mCurrentState);
+      if (mState != mPlaylist.getCurrentState())
+        setState(mPlaylist.getCurrentState());
 
       // service changes in state video state machine
       stateMachine();
@@ -161,23 +157,23 @@ void PlaylistWidget::stateMachine()
   // If you are a DJ instance.
   if ((*mUser)->hasRole("DJ") && mVideo)
   {
-    if (getState() == INIT)
+    if (getState() == Playlist::INIT)
     {
       mVideo->pause();
 
-      if (mCurrentSongPath.empty())
+      if (mPlaylist.getCurrentSongPath().empty())
         updateQueue(false);
-      mSongPath = mCurrentSongPath;
+      mSongPath = mPlaylist.getCurrentSongPath();
       mVideo->clearSources();
       mVideo->addSource(Wt::WLink(mSongPath));
       mVideoStarted = false;
-      mVideo->setPoster(mCurrentPoster);
+      mVideo->setPoster(mPlaylist.getCurrentPoster());
     }
 
     // Not also a singer
     if (!(*mUser)->hasRole("Singer"))
     {
-      if (getState() == PLAYING && !mVideoStarted)
+      if (getState() == Playlist::PLAYING && !mVideoStarted)
       {
         if (!mVideo->playing())
         {
@@ -185,7 +181,7 @@ void PlaylistWidget::stateMachine()
           mVideoStarted = true;
         }
       }
-      else if (getState() == PAUSE)
+      else if (getState() == Playlist::PAUSE)
       {
         if (mVideo->playing())
         {
@@ -197,30 +193,30 @@ void PlaylistWidget::stateMachine()
   }
 }
 
-void PlaylistWidget::setState(State state)
+void PlaylistWidget::setState(Playlist::State state)
 {
   switch (state)
   {
-    case INIT:
-    case PLAYING:
+    case Playlist::INIT:
+    case Playlist::PLAYING:
       // State initial conditions
       mVideoStarted = false;
 
       break;
-    case PAUSE:
+    case Playlist::PAUSE:
       // State initial conditions
       mVideoStarted = true;
 
       break;
     default:
-      mState = UNKNOWN;
+      mState = Playlist::UNKNOWN;
   }
 
-  std::cout << stateMap.at(mState) << " to " << stateMap.at(state) << std::endl;
+  std::cout << Playlist::stateMap.at(mState) << " to " << Playlist::stateMap.at(state) << std::endl;
   mState = state;
 }
 
-PlaylistWidget::State PlaylistWidget::getState() const
+Playlist::State PlaylistWidget::getState() const
 {
   return mState;
 }
@@ -235,13 +231,13 @@ void PlaylistWidget::updateQueue(bool removeFirst)
     nextDitty = mPlaylist.getNextDitty();
   }
 
-  mCurrentPoster = dittyPicture();
+  mPlaylist.setCurrentPoster(dittyPicture());
 
   if (!nextDitty)
   {
-    mCurrentSongPath = "";
+    mPlaylist.setCurrentSongPath("");
     return;
   }
 
-  mCurrentSongPath = nextDitty->getField(Song::kPATH);
+  mPlaylist.setCurrentSongPath(nextDitty->getField(Song::kPATH));
 }
