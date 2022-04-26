@@ -15,7 +15,9 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
     mTableView(nullptr),
     mModel(),
     mTestText(),
-    mContainer()
+    mContainer(),
+    mLongPressDuration(nullptr),
+    mCurrentIndex()
 {
   mContainer = this;
 
@@ -125,6 +127,29 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   mTableView->setSelectionMode(Wt::SelectionMode::Single);
   mTableView->setEditTriggers(Wt::EditTrigger::None);
   mTableView->setSortingEnabled(true);
+  mTableView->doubleClicked().connect([this, addPushButton](const Wt::WModelIndex&, const Wt::WMouseEvent& e) {
+    addPushButton->clicked().emit(e);
+  });
+
+  mLongPressDuration = mContainer->addChild(std::make_unique<Wt::WTimer>());
+  mLongPressDuration->setInterval(std::chrono::milliseconds(1000));
+  mLongPressDuration->setSingleShot(true);
+  mLongPressDuration->timeout().connect([this, addPushButton] {
+    mTableView->select(mCurrentIndex);
+    Wt::WMouseEvent e;
+    addPushButton->clicked().emit(e);
+  });
+
+  mTableView->touchStarted().connect([this, addPushButton](const std::vector<Wt::WModelIndex>& indexes, const Wt::WTouchEvent&) {
+    auto indexIter = indexes.end();
+    indexIter--;
+    mCurrentIndex = *indexIter;
+    mLongPressDuration->start();
+  });
+
+  mTableView->touchEnded().connect([this, addPushButton](const std::vector<Wt::WModelIndex>&, const Wt::WTouchEvent&) {
+    mLongPressDuration->stop();
+  });
 
   //// Hide columns that users shouldn't see
   std::vector<std::string> columnsToHide = {Song::kID, Song::kTAGS, Song::kPATH};

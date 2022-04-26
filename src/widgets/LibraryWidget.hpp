@@ -6,6 +6,7 @@
 #include <Wt/WStandardItem.h>
 #include <Wt/WStandardItemModel.h>
 #include <Wt/WTableView.h>
+#include <Wt/WTimer.h>
 
 #include "Library.hpp"
 #include "Playlist.hpp"
@@ -46,6 +47,8 @@ private:
   std::shared_ptr<Wt::WStandardItemModel> mModel;
   Wt::WText* mTestText;
   Wt::WContainerWidget* mContainer;
+  Wt::WTimer* mLongPressDuration;
+  Wt::WModelIndex mCurrentIndex;
 };
 
 #endif
