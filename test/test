@@ -94,6 +94,8 @@ state() {
   queryTest "PLAYLIST:SONGPATH?"
   queryTest "PLAYLIST:POSTER?"
   queryTest "PLAYLIST:LATESTENUM?"
+  echo
+  cat playlist.csv
 }
 
 auth() {
