@@ -13,7 +13,8 @@ Table::Table(const std::string& tablePath, const std::string& key) :
     mKey(key),
     mNewRecordFunc(nullptr),
     mFileMutex(),
-    mScpiFunctions()
+    mScpiFunctions(),
+    mNewFileHeader()
 {
   mScpiFunctions = {
       {"PRINT", [this](const Scpi&) -> std::string { return std::to_string(printTable()); }},
@@ -89,7 +90,11 @@ size_t Table::loadTable()
   if (!file.is_open())
   {
     std::cerr << "Failed to open file: " << mTablePath << std::endl;
-    return 0;
+    std::ofstream newFile(mTablePath);
+    newFile << StringThings::vecToStr(mNewFileHeader, ",");
+    newFile.close();
+
+    file.open(mTablePath);
   }
 
   clearTable();
@@ -290,5 +295,14 @@ std::string Table::parseScpi(const Scpi& scpi)
     return "Unknown command: \"" + scpi.getScpiStr() + "\" -> \"" + cmd + "\"\n";
 
   return mScpiFunctions.at(cmd)(scpi);
+}
+
+const std::vector<std::string>& Table::getNewFileHeader() const
+{
+  return mNewFileHeader;
+}
+void Table::setNewFileHeader(const std::vector<std::string>& val)
+{
+  mNewFileHeader = val;
 }
 }  // namespace CsvDb

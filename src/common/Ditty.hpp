@@ -5,10 +5,6 @@
 
 #include "Song.hpp"
 
-// enum,Song_hash,singer
-// 1,asdf124,ThisIsJonathan
-
-// class Ditty : public CsvDb::Record
 class Ditty : public Song
 {
 public:

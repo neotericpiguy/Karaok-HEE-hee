@@ -32,6 +32,9 @@ public:
   const std::function<Record*()>& getNewRecordFunc() const;
   void setNewRecordFunc(const std::function<Record*()>& val);
 
+  const std::vector<std::string>& getNewFileHeader() const;
+  void setNewFileHeader(const std::vector<std::string>& val);
+
   virtual size_t loadTable();
   size_t printTable() const;
   size_t saveTable() const;
@@ -62,6 +65,8 @@ private:
   std::function<Record*()> mNewRecordFunc;
   mutable std::mutex mFileMutex;
   std::map<std::string, std::function<std::string(const Scpi&)>> mScpiFunctions;
+
+  std::vector<std::string> mNewFileHeader;
 };
 }  // namespace CsvDb
 
