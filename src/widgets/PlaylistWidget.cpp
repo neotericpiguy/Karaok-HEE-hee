@@ -90,15 +90,11 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
         insertWidget(1, std::move(nextPushButton));
 
         auto pausePushButton = std::make_unique<Wt::WPushButton>("Pause");
-        pausePushButton->clicked().connect([this] {
-          mCurrentState = PAUSE;
-        });
+        pausePushButton->clicked().connect([this] { mCurrentState = PAUSE; });
         insertWidget(1, std::move(pausePushButton));
 
         auto startPushButton = std::make_unique<Wt::WPushButton>("Start");
-        startPushButton->clicked().connect([this] {
-          mCurrentState = PLAYING;
-        });
+        startPushButton->clicked().connect([this] { mCurrentState = PLAYING; });
         insertWidget(1, std::move(startPushButton));
 
         if (mCurrentState != INIT && mCurrentSongPath.empty())
@@ -142,6 +138,9 @@ std::string PlaylistWidget::dittyPicture()
   static std::string prevTargetFile;
 
   std::string text = StringThings::vecToStr(results, "\n");
+  if (text.empty())
+    text = "Empty Playlist...";
+
   if (text != dittyText)
   {
     std::string cmd = "convert -size 2560x1080 xc:black " + targetFilename;
@@ -166,6 +165,8 @@ void PlaylistWidget::stateMachine()
     {
       mVideo->pause();
 
+      if (mCurrentSongPath.empty())
+        updateQueue(false);
       mSongPath = mCurrentSongPath;
       mVideo->clearSources();
       mVideo->addSource(Wt::WLink(mSongPath));
@@ -237,7 +238,10 @@ void PlaylistWidget::updateQueue(bool removeFirst)
   mCurrentPoster = dittyPicture();
 
   if (!nextDitty)
+  {
+    mCurrentSongPath = "";
     return;
+  }
 
   mCurrentSongPath = nextDitty->getField(Song::kPATH);
 }

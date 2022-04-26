@@ -41,8 +41,18 @@ Playlist::Playlist(const Library& library) :
          return StringThings::vecToStr(results, "\n");
        }},
   };
-
   addScpiFunctions(temp);
+
+  std::vector<std::string> newFileHeaders = {
+      "ORDER",
+      "SINGER",
+      "ID",
+      "TITLE",
+      "ARTIST",
+      "TAGS",
+      "PATH",
+  };
+  setNewFileHeader(newFileHeaders);
 }
 
 Playlist::~Playlist()
