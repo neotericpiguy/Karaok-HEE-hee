@@ -27,12 +27,6 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
     updateSearchTable(criteria);
   });
 
-  mSearchEdit->enterPressed().connect([this] {
-    auto criteria = mSearchEdit->text().toUTF8();
-    mSearchEdit->setText("");
-    updateSearchTable(criteria);
-  });
-
   mModel = std::make_shared<Wt::WStandardItemModel>();
   size_t column = 0;
 
@@ -44,7 +38,8 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   updateSearchTable("");
 
   auto addPushButton = mContainer->addNew<Wt::WPushButton>("Add Song");
-  addPushButton->clicked().connect([this] {
+  addPushButton->setStyleClass("btn-primary");
+  addPushButton->clicked().connect([this]() {
     if (!(*mUser))
     {
       auto messageBox = this->addChild(
@@ -72,13 +67,30 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
 
     mPlaylist.addDitty(id, singer);
     auto messageBox = this->addChild(
-        std::make_unique<Wt::WMessageBox>("Song", "Song added!", Wt::Icon::Information,
+        std::make_unique<Wt::WMessageBox>(singer,
+                                          songPtr->getField(Song::kTITLE) + " song added!",
+                                          Wt::Icon::Information,
                                           Wt::StandardButton::Ok));
 
     messageBox->buttonClicked().connect([messageBox, this] {
       this->removeChild(messageBox);
     });
     messageBox->show();
+  });
+
+  mSearchEdit->enterPressed().connect([this, addPushButton] {
+    auto criteria = mSearchEdit->text().toUTF8();
+    mSearchEdit->setText("");
+    updateSearchTable(criteria);
+
+    // Special case where a user hits enter and there is only 1 entry
+    if (mLibrary.findSong(criteria).size() == 1)
+    {
+      Wt::WModelIndex index = mModel->index(0, 0);
+      mTableView->select(index);
+      Wt::WMouseEvent e;
+      addPushButton->clicked().emit(e);
+    }
   });
 
   auto editPushButton = mContainer->addNew<Wt::WPushButton>("Edit Song");
