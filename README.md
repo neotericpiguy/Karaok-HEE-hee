@@ -28,4 +28,4 @@ Add songs from youtube by copying the youtube link into the the Download Queue
 
 Sign in as dj to provide remote control over display
 
-<img src="https://raw.githubusercontent.com/neotericpiguy/i/master/Karaok-HEE-hee/djMode.gif" width="325">
+<img src="https://raw.githubusercontent.com/neotericpiguy/i/master/Karaok-HEE-hee/djMode.gif" width="650">
