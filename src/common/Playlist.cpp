@@ -50,6 +50,18 @@ Playlist::Playlist(const Library& library) :
          auto results = songList();
          return StringThings::vecToStr(results, "\n");
        }},
+      {"STATE?", [this](const Scpi&) -> std::string {
+         return stateMap.at(mCurrentState);
+       }},
+      {"SONGPATH?", [this](const Scpi&) -> std::string {
+         return mCurrentSongPath;
+       }},
+      {"POSTER?", [this](const Scpi&) -> std::string {
+         return mCurrentPoster;
+       }},
+      {"LATESTENUM?", [this](const Scpi&) -> std::string {
+         return std::to_string(mLatestEnum);
+       }},
   };
   addScpiFunctions(temp);
 
@@ -108,7 +120,10 @@ size_t Playlist::loadTable()
 
   auto records = getTableRecords();
   if (records.empty())
+  {
+    mLatestEnum = 1000;
     return records.size();
+  }
 
   auto lastIter = records.end();
   lastIter--;
@@ -116,7 +131,7 @@ size_t Playlist::loadTable()
   std::string lastKeyStr = lastIter->first;
   if (!StringThings::strTo(mLatestEnum, lastKeyStr))
   {
-    mLatestEnum = 0;
+    mLatestEnum = 1000;
     clearTable();
   }
 
@@ -189,4 +204,33 @@ std::vector<std::string> Playlist::songList() const
     result.push_back(text);
   }
   return result;
+}
+
+std::string Playlist::dittyPicture()
+{
+  std::string targetPath = "/usr/share/Wt";
+  std::string targetFile = "pics/target" + std::to_string(rand()) + ".jpg";
+  std::string targetFilename = targetPath + "/" + targetFile;
+
+  auto results = songList();
+
+  static std::string dittyText;
+
+  std::string text = StringThings::vecToStr(results, "\n");
+  if (text.empty())
+    text = "Empty Playlist...";
+
+  if (text != dittyText)
+  {
+    std::string cmd = "convert -size 2560x1080 xc:black " + targetFilename;
+    system(cmd.c_str());
+
+    cmd = "convert -pointsize 80 -fill white -draw 'text 60,100 \"" + text + "\"' " + targetFilename + " " + targetFilename;
+    system(cmd.c_str());
+
+    dittyText = text;
+    mCurrentPoster = targetFile;
+  }
+
+  return mCurrentPoster;
 }

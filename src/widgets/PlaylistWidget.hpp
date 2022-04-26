@@ -17,7 +17,6 @@ public:
   Playlist& getPlaylist() const;
   void setPlaylist(Playlist& val);
 
-  std::string dittyPicture();
   void stateMachine();
 
   void updateQueue(bool removeFirst = true);
@@ -33,7 +32,6 @@ private:
   bool mVideoStarted;
 
   std::string mPoster;
-  std::string mSongPath;
   Playlist::State mState;
 };
 

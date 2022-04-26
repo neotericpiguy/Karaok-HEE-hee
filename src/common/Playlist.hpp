@@ -43,6 +43,8 @@ public:
   const std::string& getCurrentPoster() const;
   void setCurrentPoster(const std::string& val);
 
+  std::string dittyPicture();
+
 private:
   const Library& mLibrary;
   size_t mLatestEnum;

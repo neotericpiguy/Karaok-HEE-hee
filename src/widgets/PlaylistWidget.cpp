@@ -19,7 +19,6 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
     mVideo(nullptr),
     mVideoStarted(false),
     mPoster(""),
-    mSongPath(""),
     mState(Playlist::UNKNOWN)
 {
   auto container = this;
@@ -122,36 +121,6 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
   }
 }
 
-std::string PlaylistWidget::dittyPicture()
-{
-  std::string targetPath = "/usr/share/Wt";
-  std::string targetFile = "pics/target" + std::to_string(rand()) + ".jpg";
-  std::string targetFilename = targetPath + "/" + targetFile;
-
-  auto results = mPlaylist.songList();
-
-  static std::string dittyText;
-  static std::string prevTargetFile;
-
-  std::string text = StringThings::vecToStr(results, "\n");
-  if (text.empty())
-    text = "Empty Playlist...";
-
-  if (text != dittyText)
-  {
-    std::string cmd = "convert -size 2560x1080 xc:black " + targetFilename;
-    system(cmd.c_str());
-
-    cmd = "convert -pointsize 80 -fill white -draw 'text 60,100 \"" + text + "\"' " + targetFilename + " " + targetFilename;
-    system(cmd.c_str());
-
-    dittyText = text;
-    prevTargetFile = targetFile;
-  }
-
-  return prevTargetFile;
-}
-
 void PlaylistWidget::stateMachine()
 {
   // If you are a DJ instance.
@@ -161,11 +130,9 @@ void PlaylistWidget::stateMachine()
     {
       mVideo->pause();
 
-      if (mPlaylist.getCurrentSongPath().empty())
-        updateQueue(false);
-      mSongPath = mPlaylist.getCurrentSongPath();
+      updateQueue(false);
       mVideo->clearSources();
-      mVideo->addSource(Wt::WLink(mSongPath));
+      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
       mVideoStarted = false;
       mVideo->setPoster(mPlaylist.getCurrentPoster());
     }
@@ -212,7 +179,6 @@ void PlaylistWidget::setState(Playlist::State state)
       mState = Playlist::UNKNOWN;
   }
 
-  std::cout << Playlist::stateMap.at(mState) << " to " << Playlist::stateMap.at(state) << std::endl;
   mState = state;
 }
 
@@ -231,7 +197,8 @@ void PlaylistWidget::updateQueue(bool removeFirst)
     nextDitty = mPlaylist.getNextDitty();
   }
 
-  mPlaylist.setCurrentPoster(dittyPicture());
+  // Update Ditty picture
+  mPlaylist.dittyPicture();
 
   if (!nextDitty)
   {
