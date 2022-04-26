@@ -67,34 +67,34 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
 
         mVideo->playbackStarted().connect([this] {});
         mVideo->ended().connect([this] {
-          if (mPlaylist.getCurrentState() == Playlist::Playlist::INIT)
+          if (mPlaylist.getCurrentState() == Playlist::INIT)
             return;
 
-          mPlaylist.setCurrentState(Playlist::Playlist::INIT);
+          mPlaylist.setCurrentState(Playlist::INIT);
           updateQueue();
         });
 
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
-          if (mPlaylist.getCurrentState() == Playlist::Playlist::INIT)
+          if (mPlaylist.getCurrentState() == Playlist::INIT)
             return;
 
-          mPlaylist.setCurrentState(Playlist::Playlist::INIT);
+          mPlaylist.setCurrentState(Playlist::INIT);
           updateQueue();
         });
         insertWidget(1, std::move(nextPushButton));
 
         auto pausePushButton = std::make_unique<Wt::WPushButton>("Pause");
-        pausePushButton->clicked().connect([this] { mPlaylist.setCurrentState(Playlist::Playlist::PAUSE); });
+        pausePushButton->clicked().connect([this] { mPlaylist.setCurrentState(Playlist::PAUSE); });
         insertWidget(1, std::move(pausePushButton));
 
         auto startPushButton = std::make_unique<Wt::WPushButton>("Start");
-        startPushButton->clicked().connect([this] { mPlaylist.setCurrentState(Playlist::Playlist::PLAYING); });
+        startPushButton->clicked().connect([this] { mPlaylist.setCurrentState(Playlist::PLAYING); });
         insertWidget(1, std::move(startPushButton));
 
-        if (mPlaylist.getCurrentState() != Playlist::Playlist::INIT && mPlaylist.getCurrentSongPath().empty())
+        if (mPlaylist.getCurrentState() != Playlist::INIT && mPlaylist.getCurrentSongPath().empty())
         {
-          mPlaylist.setCurrentState(Playlist::Playlist::INIT);
+          mPlaylist.setCurrentState(Playlist::INIT);
           updateQueue(false);
         }
       }
