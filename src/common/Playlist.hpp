@@ -11,6 +11,16 @@
 class Playlist : public CsvDb::Table
 {
 public:
+  enum State {
+    UNKNOWN,
+    INIT,
+    PLAYING,
+    PAUSE,
+  };
+
+  static const std::map<State, std::string> stateMap;
+
+public:
   Playlist(const Library& library);
   ~Playlist();
 
@@ -24,9 +34,24 @@ public:
 
   std::vector<std::string> songList() const;
 
+  State getCurrentState() const;
+  void setCurrentState(State val);
+
+  const std::string& getCurrentSongPath() const;
+  void setCurrentSongPath(const std::string& val);
+
+  const std::string& getCurrentPoster() const;
+  void setCurrentPoster(const std::string& val);
+
+  std::string dittyPicture();
+
 private:
   const Library& mLibrary;
   size_t mLatestEnum;
+
+  State mCurrentState;
+  std::string mCurrentSongPath;
+  std::string mCurrentPoster;
 };
 
 #endif

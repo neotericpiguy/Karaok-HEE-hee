@@ -15,7 +15,9 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
     mTableView(nullptr),
     mModel(),
     mTestText(),
-    mContainer()
+    mContainer(),
+    mLongPressDuration(nullptr),
+    mCurrentIndex()
 {
   mContainer = this;
 
@@ -24,12 +26,6 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
 
   mSearchEdit->textInput().connect([this] {
     auto criteria = mSearchEdit->text().toUTF8();
-    updateSearchTable(criteria);
-  });
-
-  mSearchEdit->enterPressed().connect([this] {
-    auto criteria = mSearchEdit->text().toUTF8();
-    mSearchEdit->setText("");
     updateSearchTable(criteria);
   });
 
@@ -44,7 +40,8 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   updateSearchTable("");
 
   auto addPushButton = mContainer->addNew<Wt::WPushButton>("Add Song");
-  addPushButton->clicked().connect([this] {
+  addPushButton->setStyleClass("btn-primary");
+  addPushButton->clicked().connect([this]() {
     if (!(*mUser))
     {
       auto messageBox = this->addChild(
@@ -72,13 +69,30 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
 
     mPlaylist.addDitty(id, singer);
     auto messageBox = this->addChild(
-        std::make_unique<Wt::WMessageBox>("Song", "Song added!", Wt::Icon::Information,
+        std::make_unique<Wt::WMessageBox>(singer,
+                                          songPtr->getField(Song::kTITLE) + " song added!",
+                                          Wt::Icon::Information,
                                           Wt::StandardButton::Ok));
 
     messageBox->buttonClicked().connect([messageBox, this] {
       this->removeChild(messageBox);
     });
     messageBox->show();
+  });
+
+  mSearchEdit->enterPressed().connect([this, addPushButton] {
+    auto criteria = mSearchEdit->text().toUTF8();
+    mSearchEdit->setText("");
+    updateSearchTable(criteria);
+
+    // Special case where a user hits enter and there is only 1 entry
+    if (mLibrary.findSong(criteria).size() == 1)
+    {
+      Wt::WModelIndex index = mModel->index(0, 0);
+      mTableView->select(index);
+      Wt::WMouseEvent e;
+      addPushButton->clicked().emit(e);
+    }
   });
 
   auto editPushButton = mContainer->addNew<Wt::WPushButton>("Edit Song");
@@ -113,6 +127,29 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   mTableView->setSelectionMode(Wt::SelectionMode::Single);
   mTableView->setEditTriggers(Wt::EditTrigger::None);
   mTableView->setSortingEnabled(true);
+  mTableView->doubleClicked().connect([this, addPushButton](const Wt::WModelIndex&, const Wt::WMouseEvent& e) {
+    addPushButton->clicked().emit(e);
+  });
+
+  mLongPressDuration = mContainer->addChild(std::make_unique<Wt::WTimer>());
+  mLongPressDuration->setInterval(std::chrono::milliseconds(1000));
+  mLongPressDuration->setSingleShot(true);
+  mLongPressDuration->timeout().connect([this, addPushButton] {
+    mTableView->select(mCurrentIndex);
+    Wt::WMouseEvent e;
+    addPushButton->clicked().emit(e);
+  });
+
+  mTableView->touchStarted().connect([this, addPushButton](const std::vector<Wt::WModelIndex>& indexes, const Wt::WTouchEvent&) {
+    auto indexIter = indexes.end();
+    indexIter--;
+    mCurrentIndex = *indexIter;
+    mLongPressDuration->start();
+  });
+
+  mTableView->touchEnded().connect([this, addPushButton](const std::vector<Wt::WModelIndex>&, const Wt::WTouchEvent&) {
+    mLongPressDuration->stop();
+  });
 
   //// Hide columns that users shouldn't see
   std::vector<std::string> columnsToHide = {Song::kID, Song::kTAGS, Song::kPATH};
