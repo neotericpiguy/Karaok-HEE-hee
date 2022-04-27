@@ -1,5 +1,5 @@
 BUILD_PATH=build
-EXE=webRemote
+EXE=KaraokeApp
 PORT=18080
 
 VERSION            = $(shell git describe --tags)

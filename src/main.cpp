@@ -5,7 +5,7 @@
 #include "Scpi.hpp"
 #include "StringThings.hpp"
 #include "TcpServer.hpp"
-#include "WebRemoteApp.hpp"
+#include "KaraokeApp.hpp"
 
 int main(int argc, char** argv)
 {
@@ -73,6 +73,6 @@ int main(int argc, char** argv)
   }
 
   return Wt::WRun(argc, argv, [&server, &dlQueue, &library, &authenticator, &playlist](const Wt::WEnvironment& env) {
-    return std::make_unique<WebRemoteApp>(env, dlQueue, library, authenticator, playlist);
+    return std::make_unique<KaraokeApp>(env, dlQueue, library, authenticator, playlist);
   });
 }

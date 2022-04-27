@@ -1,4 +1,4 @@
-#include "WebRemoteApp.hpp"
+#include "KaraokeApp.hpp"
 
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WEnvironment.h>
@@ -17,10 +17,10 @@
 #include "LibraryWidget.hpp"
 #include "PlaylistWidget.hpp"
 
-const std::string WebRemoteApp::kCookieKey = "login";
-const int WebRemoteApp::kMaxAge = 6 * 60 * 60;  // possibly seconds
+const std::string KaraokeApp::kCookieKey = "login";
+const int KaraokeApp::kMaxAge = 6 * 60 * 60;  // possibly seconds
 
-WebRemoteApp::WebRemoteApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queue, Library& library, Authenticator& authenticator, Playlist& playlist) :
+KaraokeApp::KaraokeApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queue, Library& library, Authenticator& authenticator, Playlist& playlist) :
     Wt::WApplication(env),
     mDlQueue(queue),
     mLibrary(library),
@@ -134,7 +134,7 @@ WebRemoteApp::WebRemoteApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queu
   }
 }
 
-void WebRemoteApp::showLoginDialog()
+void KaraokeApp::showLoginDialog()
 {
   mDialog = this->addChild(std::make_unique<Wt::WDialog>("Login"));
 
@@ -214,7 +214,7 @@ void WebRemoteApp::showLoginDialog()
   mDialog->raiseToFront();
 }
 
-void WebRemoteApp::showRegisterDialog()
+void KaraokeApp::showRegisterDialog()
 {
   mDialog = this->addChild(std::make_unique<Wt::WDialog>("Register"));
 
