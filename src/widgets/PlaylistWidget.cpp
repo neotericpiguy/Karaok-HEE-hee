@@ -76,9 +76,6 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
 
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
-          if (mPlaylist.getCurrentState() == Playlist::INIT)
-            return;
-
           mPlaylist.setCurrentState(Playlist::INIT);
           updateQueue();
         });
