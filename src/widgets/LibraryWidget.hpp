@@ -16,17 +16,33 @@
 class SongTableView : public Wt::WTableView
 {
 public:
-  SongTableView()
+  SongTableView() :
+      mWidth(0)
   {
     setLayoutSizeAware(true);
   }
+
   virtual void layoutSizeChanged(const int width, const int /*height*/) override
   {
     for (int column = 0; (column < this->model()->columnCount()); column++)
     {
       setColumnWidth(column, Wt::WLength((((width - 3) / 2) - 7)));
     }
+    mWidth = width;
   }
+  virtual void drawAgain()
+  {
+    if (mWidth == 0)
+      return;
+
+    for (int column = 0; (column < this->model()->columnCount()); column++)
+    {
+      setColumnWidth(column, Wt::WLength((((mWidth - 3) / 2) - 7)));
+    }
+  }
+
+private:
+  int mWidth;
 };
 
 class LibraryWidget : public Wt::WContainerWidget
