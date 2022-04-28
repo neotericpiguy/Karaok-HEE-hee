@@ -37,8 +37,6 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   for (const auto& header : headers)
     mModel->setHeaderData(column++, Wt::WString(header));
 
-  updateSearchTable("");
-
   auto addPushButton = mContainer->addNew<Wt::WPushButton>("Add Song");
   addPushButton->setStyleClass("btn-primary");
   addPushButton->clicked().connect([this]() {
@@ -82,7 +80,6 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
 
   mSearchEdit->enterPressed().connect([this, addPushButton] {
     auto criteria = mSearchEdit->text().toUTF8();
-    mSearchEdit->setText("");
     updateSearchTable(criteria);
 
     // Special case where a user hits enter and there is only 1 entry
@@ -165,7 +162,7 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   mTableView->sortByColumn(titleColumnIndex, Wt::SortOrder::Ascending);
 
   //// https://redmine.emweb.be/boards/2/topics/2659
-  // mTableView->setHeight(400);
+  updateSearchTable("");
 }
 
 void LibraryWidget::updateSearchTable(const std::string& criteria)
@@ -194,4 +191,11 @@ void LibraryWidget::updateSearchTable(const std::string& criteria)
     }
     row++;
   }
+
+  // Re sort
+  auto titleColumnIndex = std::distance(headers.begin(), std::find(headers.begin(), headers.end(), Song::kTITLE));
+  mTableView->sortByColumn(titleColumnIndex, Wt::SortOrder::Ascending);
+
+  // Re draw table again
+  mTableView->drawAgain();
 }
