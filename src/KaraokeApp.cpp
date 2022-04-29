@@ -18,7 +18,7 @@
 #include "PlaylistWidget.hpp"
 
 const std::string KaraokeApp::kCookieKey = "login";
-const int KaraokeApp::kMaxAge = 6 * 60 * 60;  // possibly seconds
+const int KaraokeApp::kMaxAge = 12 * 60 * 60;  // possibly seconds
 
 KaraokeApp::KaraokeApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queue, Library& library, Authenticator& authenticator, Playlist& playlist) :
     Wt::WApplication(env),
