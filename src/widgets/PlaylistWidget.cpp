@@ -61,7 +61,7 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
         insertWidget(0, std::move(video));
 
         mVideo->setOptions(Wt::PlayerOption::Controls);
-        mVideo->resize(Wt::WLength(100, Wt::LengthUnit::Percentage), 360);
+        mVideo->resize(Wt::WLength(100, Wt::LengthUnit::Percentage), Wt::WLength::Auto);
 
         mVideo->setPreloadMode(Wt::MediaPreloadMode::Auto);
 
