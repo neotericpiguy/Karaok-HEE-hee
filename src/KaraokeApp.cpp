@@ -140,8 +140,8 @@ void KaraokeApp::showLoginDialog()
 
   mDialog->contents()->addStyleClass("form-group");
   mDialog->setModal(true);
-
   mDialog->setResizable(true);
+  mDialog->positionAt(mLoginItem);
 
   Wt::WPushButton* ok = mDialog->footer()->addNew<Wt::WPushButton>("OK");
   ok->setDefault(true);
@@ -220,8 +220,8 @@ void KaraokeApp::showRegisterDialog()
 
   mDialog->contents()->addStyleClass("form-group");
   mDialog->setModal(true);
-
   mDialog->setResizable(true);
+  mDialog->positionAt(mLoginItem);
 
   Wt::WPushButton* ok = mDialog->footer()->addNew<Wt::WPushButton>("OK");
   ok->setDefault(true);
