@@ -11,7 +11,7 @@ Authenticator::Authenticator() :
     return new User;
   });
 
-  std::map<std::string, std::function<std::string(const Scpi&)>> temp = {
+  addScpiFunctions({
       {"ADD", [this](const Scpi& scpi) -> std::string {
          if (scpi.getParams().size() != 2)
            return "Not enough params";
@@ -52,9 +52,13 @@ Authenticator::Authenticator() :
 
          return std::to_string(authenticateUser(user));
        }},
-  };
+  });
 
-  addScpiFunctions(temp);
+  setNewFileHeader({
+      "USERNAME",
+      "PASSWORD_HASH",
+      "ROLES",
+  });
 }
 
 Authenticator::~Authenticator()

@@ -1,11 +1,11 @@
 #include "Authenticator.hpp"
 #include "DlQueue.hpp"
+#include "KaraokeApp.hpp"
 #include "Library.hpp"
 #include "Playlist.hpp"
 #include "Scpi.hpp"
 #include "StringThings.hpp"
 #include "TcpServer.hpp"
-#include "KaraokeApp.hpp"
 
 int main(int argc, char** argv)
 {
@@ -21,6 +21,10 @@ int main(int argc, char** argv)
     library.addSong(filename);
     library.saveTable();
   });
+
+#ifdef ADDITIONAL_SETTINGS
+#include "additional_settings"
+#endif
 
   const std::map<std::string, std::function<std::string(const Scpi&)>> subSystemMap = {
       {"DLQUEUE", [&dlQueue](const Scpi& scpi) { return dlQueue.parseScpi(scpi); }},

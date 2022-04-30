@@ -23,7 +23,7 @@ Playlist::Playlist(const Library& library) :
     return new Ditty;
   });
 
-  std::map<std::string, std::function<std::string(const Scpi&)>> temp = {
+  addScpiFunctions({
       {"ADD", [this](const Scpi& scpi) -> std::string {
          auto params = scpi.getParams();
          if (params.size() != 2)
@@ -62,10 +62,9 @@ Playlist::Playlist(const Library& library) :
       {"LATESTENUM?", [this](const Scpi&) -> std::string {
          return std::to_string(mLatestEnum);
        }},
-  };
-  addScpiFunctions(temp);
+  });
 
-  std::vector<std::string> newFileHeaders = {
+  setNewFileHeader({
       "ORDER",
       "SINGER",
       "ID",
@@ -73,8 +72,7 @@ Playlist::Playlist(const Library& library) :
       "ARTIST",
       "TAGS",
       "PATH",
-  };
-  setNewFileHeader(newFileHeaders);
+  });
 }
 
 Playlist::~Playlist()

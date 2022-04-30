@@ -7,7 +7,7 @@ HASH               = $(shell git rev-parse --short HEAD)
 DMRCONFIG_VERSION  = $(shell git submodule status)
 GITCOUNT           = $(shell git rev-list HEAD --count)
 
-CFLAGS   ?= -g -O -Wall -Werror -fPIC -MMD -fcommon
+CFLAGS   += -g -O -Wall -Werror -fPIC -MMD -fcommon
 CFLAGS   += -DVERSION='"$(VERSION)"'
 
 EFFCFLAGS+=-Wall
@@ -57,6 +57,8 @@ $(info $$HASH         = [${HASH}])
 $(info $$GITCOUNT     = [${GITCOUNT}])
 $(info $$BUILD_PATH   = [${BUILD_PATH}])
 $(info $$DEPS         = [${DEPS}])
+$(info $$CFLAGS       = [${CFLAGS}])
+$(info $$CXXFLAGS     = [${CXXFLAGS}])
 
 .phony: run
 
