@@ -74,6 +74,13 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
           mPlaylist.updateQueue();
         });
 
+        auto restartPushButton = std::make_unique<Wt::WPushButton>("Restart");
+        restartPushButton->clicked().connect([this] {
+          setState(Playlist::UNKNOWN);
+          mPlaylist.setCurrentState(Playlist::INIT);
+        });
+        insertWidget(1, std::move(restartPushButton));
+
         auto skipPushButton = std::make_unique<Wt::WPushButton>("Skip");
         skipPushButton->clicked().connect([this] {
           setState(Playlist::UNKNOWN);
@@ -159,30 +166,26 @@ void PlaylistWidget::setState(Playlist::State state)
 {
   switch (state)
   {
-    case Playlist::SKIP: {
+    case Playlist::SKIP:
       for (auto iter = mDittyWidgetMap.begin(); iter != mDittyWidgetMap.end(); iter++)
         iter->second->removeFromParent();
       mDittyWidgetMap.clear();
-    }
       // fall through
-    case Playlist::INIT: {
+    case Playlist::INIT:
       mVideo->pause();
       mPlaylist.updateQueue(false);
       mVideo->clearSources();
       mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
-      mVideoStarted = false;
       mVideo->setPoster(mPlaylist.getCurrentPoster());
-    }
-    break;
+      mVideoStarted = false;
+      // fall through
     case Playlist::PLAYING:
       // State initial conditions
       mVideoStarted = false;
-
       break;
     case Playlist::PAUSE:
       // State initial conditions
       mVideoStarted = true;
-
       break;
     default:
       mState = Playlist::UNKNOWN;
