@@ -7,6 +7,7 @@
 const std::map<Playlist::State, std::string> Playlist::stateMap = {
     {Playlist::UNKNOWN, "UNKNOWN"},
     {Playlist::INIT, "INIT"},
+    {Playlist::SKIP, "SKIP"},
     {Playlist::PLAYING, "PLAYING"},
     {Playlist::PAUSE, "PAUSE"},
 };
@@ -239,9 +240,35 @@ std::string Playlist::dittyPicture()
   return mCurrentPoster;
 }
 
+void Playlist::updateQueue(bool removeFirst)
+{
+  auto nextDitty = getNextDitty();
+
+  if (removeFirst)
+  {
+    removeRecord(*nextDitty);
+    nextDitty = getNextDitty();
+  }
+
+  // Update Ditty picture
+  dittyPicture();
+
+  if (!nextDitty)
+  {
+    setCurrentSongPath("");
+    return;
+  }
+
+  setCurrentSongPath(nextDitty->getField(Song::kPATH));
+}
+
 void Playlist::skip()
 {
   auto records = getTableRecords();
+
+  if (records.size() < 2)
+    return;
+
   auto firstEle = records.begin();
   auto secondEle = firstEle++;
   auto temp = firstEle->second;

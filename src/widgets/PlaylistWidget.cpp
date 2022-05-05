@@ -71,23 +71,21 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
             return;
 
           mPlaylist.setCurrentState(Playlist::INIT);
-          updateQueue();
+          mPlaylist.updateQueue();
         });
 
         auto skipPushButton = std::make_unique<Wt::WPushButton>("Skip");
         skipPushButton->clicked().connect([this] {
-          mPlaylist.setCurrentState(Playlist::INIT);
+          setState(Playlist::INIT);
+          mPlaylist.setCurrentState(Playlist::SKIP);
           mPlaylist.skip();
-          for (auto iter = mDittyWidgetMap.begin(); iter != mDittyWidgetMap.end(); iter++)
-            iter->second->removeFromParent();
-          mDittyWidgetMap.clear();
         });
         insertWidget(1, std::move(skipPushButton));
 
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
           mPlaylist.setCurrentState(Playlist::INIT);
-          updateQueue();
+          mPlaylist.updateQueue();
         });
         insertWidget(1, std::move(nextPushButton));
 
@@ -102,7 +100,7 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
         if (mPlaylist.getCurrentState() != Playlist::INIT && mPlaylist.getCurrentSongPath().empty())
         {
           mPlaylist.setCurrentState(Playlist::INIT);
-          updateQueue(false);
+          mPlaylist.updateQueue(false);
         }
       }
 
@@ -137,7 +135,16 @@ void PlaylistWidget::stateMachine()
     {
       mVideo->pause();
 
-      updateQueue(false);
+      mPlaylist.updateQueue(false);
+      mVideo->clearSources();
+      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
+      mVideoStarted = false;
+      mVideo->setPoster(mPlaylist.getCurrentPoster());
+    }
+    else if (getState() == Playlist::SKIP)
+    {
+      mVideo->pause();
+      mPlaylist.updateQueue(false);
       mVideo->clearSources();
       mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
       mVideoStarted = false;
@@ -171,6 +178,12 @@ void PlaylistWidget::setState(Playlist::State state)
 {
   switch (state)
   {
+    case Playlist::SKIP: {
+      for (auto iter = mDittyWidgetMap.begin(); iter != mDittyWidgetMap.end(); iter++)
+        iter->second->removeFromParent();
+      mDittyWidgetMap.clear();
+    }
+    break;
     case Playlist::INIT:
     case Playlist::PLAYING:
       // State initial conditions
@@ -194,25 +207,3 @@ Playlist::State PlaylistWidget::getState() const
   return mState;
 }
 
-// TODO move this to Playlist
-void PlaylistWidget::updateQueue(bool removeFirst)
-{
-  auto nextDitty = mPlaylist.getNextDitty();
-
-  if (removeFirst)
-  {
-    mPlaylist.removeRecord(*nextDitty);
-    nextDitty = mPlaylist.getNextDitty();
-  }
-
-  // Update Ditty picture
-  mPlaylist.dittyPicture();
-
-  if (!nextDitty)
-  {
-    mPlaylist.setCurrentSongPath("");
-    return;
-  }
-
-  mPlaylist.setCurrentSongPath(nextDitty->getField(Song::kPATH));
-}
