@@ -71,13 +71,29 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
             return;
 
           mPlaylist.setCurrentState(Playlist::INIT);
-          updateQueue();
+          mPlaylist.updateQueue();
         });
+
+        auto restartPushButton = std::make_unique<Wt::WPushButton>("Restart");
+        restartPushButton->clicked().connect([this] {
+          setState(Playlist::UNKNOWN);
+          mPlaylist.setCurrentState(Playlist::INIT);
+        });
+        insertWidget(1, std::move(restartPushButton));
+
+        auto skipPushButton = std::make_unique<Wt::WPushButton>("Skip");
+        skipPushButton->clicked().connect([this] {
+          setState(Playlist::UNKNOWN);
+          mPlaylist.setCurrentState(Playlist::SKIP);
+          mPlaylist.skip();
+        });
+        insertWidget(1, std::move(skipPushButton));
 
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
+          setState(Playlist::UNKNOWN);
           mPlaylist.setCurrentState(Playlist::INIT);
-          updateQueue();
+          mPlaylist.updateQueue();
         });
         insertWidget(1, std::move(nextPushButton));
 
@@ -92,7 +108,7 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
         if (mPlaylist.getCurrentState() != Playlist::INIT && mPlaylist.getCurrentSongPath().empty())
         {
           mPlaylist.setCurrentState(Playlist::INIT);
-          updateQueue(false);
+          mPlaylist.updateQueue(false);
         }
       }
 
@@ -123,17 +139,6 @@ void PlaylistWidget::stateMachine()
   // If you are a DJ instance.
   if ((*mUser)->hasRole("DJ") && mVideo)
   {
-    if (getState() == Playlist::INIT)
-    {
-      mVideo->pause();
-
-      updateQueue(false);
-      mVideo->clearSources();
-      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
-      mVideoStarted = false;
-      mVideo->setPoster(mPlaylist.getCurrentPoster());
-    }
-
     // Not also a singer
     if (!(*mUser)->hasRole("Singer"))
     {
@@ -161,16 +166,26 @@ void PlaylistWidget::setState(Playlist::State state)
 {
   switch (state)
   {
+    case Playlist::SKIP:
+      for (auto iter = mDittyWidgetMap.begin(); iter != mDittyWidgetMap.end(); iter++)
+        iter->second->removeFromParent();
+      mDittyWidgetMap.clear();
+      // fall through
     case Playlist::INIT:
+      mVideo->pause();
+      mPlaylist.updateQueue(false);
+      mVideo->clearSources();
+      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
+      mVideo->setPoster(mPlaylist.getCurrentPoster());
+      mVideoStarted = false;
+      // fall through
     case Playlist::PLAYING:
       // State initial conditions
       mVideoStarted = false;
-
       break;
     case Playlist::PAUSE:
       // State initial conditions
       mVideoStarted = true;
-
       break;
     default:
       mState = Playlist::UNKNOWN;
@@ -184,24 +199,3 @@ Playlist::State PlaylistWidget::getState() const
   return mState;
 }
 
-void PlaylistWidget::updateQueue(bool removeFirst)
-{
-  auto nextDitty = mPlaylist.getNextDitty();
-
-  if (removeFirst)
-  {
-    mPlaylist.removeRecord(*nextDitty);
-    nextDitty = mPlaylist.getNextDitty();
-  }
-
-  // Update Ditty picture
-  mPlaylist.dittyPicture();
-
-  if (!nextDitty)
-  {
-    mPlaylist.setCurrentSongPath("");
-    return;
-  }
-
-  mPlaylist.setCurrentSongPath(nextDitty->getField(Song::kPATH));
-}

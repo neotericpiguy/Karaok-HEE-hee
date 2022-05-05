@@ -19,8 +19,6 @@ public:
 
   void stateMachine();
 
-  void updateQueue(bool removeFirst = true);
-
   void setState(Playlist::State state);
   Playlist::State getState() const;
 

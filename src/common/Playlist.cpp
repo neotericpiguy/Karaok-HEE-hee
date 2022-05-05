@@ -7,6 +7,7 @@
 const std::map<Playlist::State, std::string> Playlist::stateMap = {
     {Playlist::UNKNOWN, "UNKNOWN"},
     {Playlist::INIT, "INIT"},
+    {Playlist::SKIP, "SKIP"},
     {Playlist::PLAYING, "PLAYING"},
     {Playlist::PAUSE, "PAUSE"},
 };
@@ -49,6 +50,10 @@ Playlist::Playlist(const Library& library) :
       {"LIST", [this](const Scpi&) -> std::string {
          auto results = songList();
          return StringThings::vecToStr(results, "\n");
+       }},
+      {"SKIP", [this](const Scpi&) -> std::string {
+         skip();
+         return std::to_string(mLatestEnum);
        }},
       {"STATE?", [this](const Scpi&) -> std::string {
          return stateMap.at(mCurrentState);
@@ -211,6 +216,7 @@ std::string Playlist::dittyPicture()
   std::string targetFilename = targetPath + "/" + targetFile;
 
   auto results = songList();
+  results.resize(5);
 
   static std::string dittyText;
 
@@ -223,7 +229,8 @@ std::string Playlist::dittyPicture()
     std::string cmd = "convert -size 2560x1080 xc:black " + targetFilename;
     system(cmd.c_str());
 
-    cmd = "convert -pointsize 80 -fill white -draw 'text 60,100 \"" + text + "\"' " + targetFilename + " " + targetFilename;
+    std::string fileText = "Karaok-HEE-hee Line up:\n\n" + text;
+    cmd = "convert -pointsize 80 -fill white -draw 'text 60,100 \"" + fileText + "\"' " + targetFilename + " " + targetFilename;
     system(cmd.c_str());
 
     dittyText = text;
@@ -231,4 +238,42 @@ std::string Playlist::dittyPicture()
   }
 
   return mCurrentPoster;
+}
+
+void Playlist::updateQueue(bool removeFirst)
+{
+  auto nextDitty = getNextDitty();
+
+  if (removeFirst)
+  {
+    removeRecord(*nextDitty);
+    nextDitty = getNextDitty();
+  }
+
+  // Update Ditty picture
+  dittyPicture();
+
+  if (!nextDitty)
+  {
+    setCurrentSongPath("");
+    return;
+  }
+
+  setCurrentSongPath(nextDitty->getField(Song::kPATH));
+}
+
+void Playlist::skip()
+{
+  auto records = getTableRecords();
+
+  if (records.size() < 2)
+    return;
+
+  auto firstEle = records.begin();
+  auto secondEle = firstEle++;
+  auto temp = firstEle->second;
+  firstEle->second = secondEle->second;
+  secondEle->second = temp;
+  setTableRecords(records);
+  saveTable();
 }

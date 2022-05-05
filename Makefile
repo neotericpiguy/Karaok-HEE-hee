@@ -83,6 +83,11 @@ run: $(BUILD_PATH)/$(EXE)
 server: $(BUILD_PATH)/$(EXE)
 	./$^ server
 
+sync: 
+	rsync -avx library.csv users.db vizio:./src/Karaok-HEE-hee
+	rsync -avx youtube.com_cookies.txt vizio:./src/Karaok-HEE-hee
+	rsync -avx /mnt/sdb/karaoke/* vizio:/mnt/sdb/karaoke
+
 clean:
 	-rm -rf $(BUILD_PATH)
 

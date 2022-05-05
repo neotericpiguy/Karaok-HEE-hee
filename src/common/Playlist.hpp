@@ -14,6 +14,7 @@ public:
   enum State {
     UNKNOWN,
     INIT,
+    SKIP,
     PLAYING,
     PAUSE,
   };
@@ -44,6 +45,8 @@ public:
   void setCurrentPoster(const std::string& val);
 
   std::string dittyPicture();
+  void skip();
+  void updateQueue(bool removeFirst = true);
 
 private:
   const Library& mLibrary;
