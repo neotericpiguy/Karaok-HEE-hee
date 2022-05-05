@@ -44,6 +44,7 @@ public:
   void setCurrentPoster(const std::string& val);
 
   std::string dittyPicture();
+  void skip();
 
 private:
   const Library& mLibrary;

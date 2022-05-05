@@ -96,6 +96,7 @@ state() {
   queryTest "PLAYLIST:LATESTENUM?"
   echo
   cat playlist.csv
+#  queryTest "PLAYLIST:SKIP"
 }
 
 auth() {

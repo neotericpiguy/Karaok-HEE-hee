@@ -74,6 +74,16 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
           updateQueue();
         });
 
+        auto skipPushButton = std::make_unique<Wt::WPushButton>("Skip");
+        skipPushButton->clicked().connect([this] {
+          mPlaylist.setCurrentState(Playlist::INIT);
+          mPlaylist.skip();
+          for (auto iter = mDittyWidgetMap.begin(); iter != mDittyWidgetMap.end(); iter++)
+            iter->second->removeFromParent();
+          mDittyWidgetMap.clear();
+        });
+        insertWidget(1, std::move(skipPushButton));
+
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
           mPlaylist.setCurrentState(Playlist::INIT);
@@ -184,6 +194,7 @@ Playlist::State PlaylistWidget::getState() const
   return mState;
 }
 
+// TODO move this to Playlist
 void PlaylistWidget::updateQueue(bool removeFirst)
 {
   auto nextDitty = mPlaylist.getNextDitty();
