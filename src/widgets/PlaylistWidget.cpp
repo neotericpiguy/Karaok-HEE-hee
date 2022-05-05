@@ -76,7 +76,7 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
 
         auto skipPushButton = std::make_unique<Wt::WPushButton>("Skip");
         skipPushButton->clicked().connect([this] {
-          setState(Playlist::INIT);
+          setState(Playlist::UNKNOWN);
           mPlaylist.setCurrentState(Playlist::SKIP);
           mPlaylist.skip();
         });
@@ -84,6 +84,7 @@ PlaylistWidget::PlaylistWidget(Playlist& playlist, User** user) :
 
         auto nextPushButton = std::make_unique<Wt::WPushButton>("Next");
         nextPushButton->clicked().connect([this] {
+          setState(Playlist::UNKNOWN);
           mPlaylist.setCurrentState(Playlist::INIT);
           mPlaylist.updateQueue();
         });
@@ -131,26 +132,6 @@ void PlaylistWidget::stateMachine()
   // If you are a DJ instance.
   if ((*mUser)->hasRole("DJ") && mVideo)
   {
-    if (getState() == Playlist::INIT)
-    {
-      mVideo->pause();
-
-      mPlaylist.updateQueue(false);
-      mVideo->clearSources();
-      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
-      mVideoStarted = false;
-      mVideo->setPoster(mPlaylist.getCurrentPoster());
-    }
-    else if (getState() == Playlist::SKIP)
-    {
-      mVideo->pause();
-      mPlaylist.updateQueue(false);
-      mVideo->clearSources();
-      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
-      mVideoStarted = false;
-      mVideo->setPoster(mPlaylist.getCurrentPoster());
-    }
-
     // Not also a singer
     if (!(*mUser)->hasRole("Singer"))
     {
@@ -183,8 +164,16 @@ void PlaylistWidget::setState(Playlist::State state)
         iter->second->removeFromParent();
       mDittyWidgetMap.clear();
     }
+      // fall through
+    case Playlist::INIT: {
+      mVideo->pause();
+      mPlaylist.updateQueue(false);
+      mVideo->clearSources();
+      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
+      mVideoStarted = false;
+      mVideo->setPoster(mPlaylist.getCurrentPoster());
+    }
     break;
-    case Playlist::INIT:
     case Playlist::PLAYING:
       // State initial conditions
       mVideoStarted = false;
