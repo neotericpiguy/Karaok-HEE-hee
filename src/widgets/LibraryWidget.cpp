@@ -129,12 +129,17 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
   });
 
   mLongPressDuration = mContainer->addChild(std::make_unique<Wt::WTimer>());
-  mLongPressDuration->setInterval(std::chrono::milliseconds(1000));
+  mLongPressDuration->setInterval(std::chrono::milliseconds(2000));
   mLongPressDuration->setSingleShot(true);
   mLongPressDuration->timeout().connect([this, addPushButton] {
     mTableView->select(mCurrentIndex);
     Wt::WMouseEvent e;
-    addPushButton->clicked().emit(e);
+
+    auto result = Wt::WMessageBox::show("Add song?", "You sure you want to add song?",
+                                        Wt::StandardButton::Ok | Wt::StandardButton::Cancel);
+
+    if (result == Wt::StandardButton::Ok)
+      addPushButton->clicked().emit(e);
   });
 
   mTableView->touchStarted().connect([this, addPushButton](const std::vector<Wt::WModelIndex>& indexes, const Wt::WTouchEvent&) {
