@@ -25,6 +25,7 @@ protected:
   static const int kMaxAge;
 
 private:
+  const Wt::WEnvironment& mEnv;
   YoutubeDl::DlQueue& mDlQueue;
   Library& mLibrary;
   Authenticator& mAuthenticator;
