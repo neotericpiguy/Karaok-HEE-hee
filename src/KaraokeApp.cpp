@@ -22,6 +22,7 @@ const int KaraokeApp::kMaxAge = 12 * 60 * 60;  // possibly seconds
 
 KaraokeApp::KaraokeApp(const Wt::WEnvironment& env, YoutubeDl::DlQueue& queue, Library& library, Authenticator& authenticator, Playlist& playlist) :
     Wt::WApplication(env),
+    mEnv(env),
     mDlQueue(queue),
     mLibrary(library),
     mAuthenticator(authenticator),
@@ -141,7 +142,12 @@ void KaraokeApp::showLoginDialog()
   mDialog->contents()->addStyleClass("form-group");
   mDialog->setModal(true);
   mDialog->setResizable(true);
-  mDialog->positionAt(mLoginItem);
+
+  // android seem to like it but apple not so much
+  // Mozilla/5.0 (Linux; Android 10; Pixel 2) AppleWebKit/537.36 (KHTML, like
+  // Gecko) Chrome/101.0.4951.41 Mobile Safari/537.36
+  if (mEnv.userAgent().find("Chrome") != std::string::npos)
+    mDialog->positionAt(mLoginItem);
 
   Wt::WPushButton* ok = mDialog->footer()->addNew<Wt::WPushButton>("OK");
   ok->setDefault(true);
@@ -278,6 +284,7 @@ void KaraokeApp::showRegisterDialog()
       User* temp = new User;
       temp->setUsername(usernameEdit->text().toUTF8());
       temp->setPasswordHash(passwordHash);
+      // TODO wants to be DJ also or else segfault
       temp->setRoles({"Singer"});
       mAuthenticator.addRecord(temp);
 
