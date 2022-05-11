@@ -53,6 +53,9 @@ public:
   LibraryWidget& operator=(const LibraryWidget& env) = delete;
 
   void updateSearchTable(const std::string& criteria);
+  void showUserEntryDialog();
+
+  void addToSongQueue(const std::string& singer);
 
 private:
   User** mUser;
@@ -65,6 +68,7 @@ private:
   Wt::WContainerWidget* mContainer;
   Wt::WTimer* mLongPressDuration;
   Wt::WModelIndex mCurrentIndex;
+  Wt::WDialog* mDialog;
 };
 
 #endif

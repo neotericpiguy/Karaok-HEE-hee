@@ -1,5 +1,6 @@
 #include "LibraryWidget.hpp"
 
+#include <Wt/WLabel.h>
 #include <Wt/WLineEdit.h>
 #include <Wt/WMessageBox.h>
 #include <Wt/WPushButton.h>
@@ -17,7 +18,8 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
     mTestText(),
     mContainer(),
     mLongPressDuration(nullptr),
-    mCurrentIndex()
+    mCurrentIndex(),
+    mDialog(nullptr)
 {
   mContainer = this;
 
@@ -53,29 +55,12 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
       return;
     }
     auto singer = (*mUser)->getUsername();
-    auto indexes = mTableView->selectedIndexes();
-    if (indexes.size() < 1)
+    if (singer == "dj")
+    {
+      showUserEntryDialog();
       return;
-
-    auto iter = indexes.begin();
-    auto item = mModel->item(iter->row(), 0);
-    auto id = item->text().toUTF8();
-
-    auto songPtr = mLibrary.getSong(id);
-    if (!songPtr)
-      return;
-
-    mPlaylist.addDitty(id, singer);
-    auto messageBox = this->addChild(
-        std::make_unique<Wt::WMessageBox>(singer,
-                                          songPtr->getField(Song::kTITLE) + " song added!",
-                                          Wt::Icon::Information,
-                                          Wt::StandardButton::Ok));
-
-    messageBox->buttonClicked().connect([messageBox, this] {
-      this->removeChild(messageBox);
-    });
-    messageBox->show();
+    }
+    addToSongQueue(singer);
   });
 
   mSearchEdit->enterPressed().connect([this, addPushButton] {
@@ -153,7 +138,7 @@ LibraryWidget::LibraryWidget(Library& library, Playlist& playlist, User** user) 
     mLongPressDuration->stop();
   });
 
-  //// Hide columns that users shouldn't see
+  // Hide columns that users shouldn't see
   std::vector<std::string> columnsToHide = {Song::kID, Song::kTAGS, Song::kPATH};
   for (const auto& columnToHide : columnsToHide)
   {
@@ -203,4 +188,76 @@ void LibraryWidget::updateSearchTable(const std::string& criteria)
 
   // Re draw table again
   mTableView->drawAgain();
+}
+
+void LibraryWidget::showUserEntryDialog()
+{
+  mDialog = this->addChild(std::make_unique<Wt::WDialog>("Login"));
+
+  mDialog->contents()->addStyleClass("form-group");
+  mDialog->setModal(true);
+  mDialog->setResizable(true);
+
+  Wt::WPushButton* ok = mDialog->footer()->addNew<Wt::WPushButton>("OK");
+  ok->setDefault(true);
+
+  Wt::WPushButton* cancel = mDialog->footer()->addNew<Wt::WPushButton>("Cancel");
+  mDialog->rejectWhenEscapePressed();
+
+  /* Accept the mDialog */
+  ok->clicked().connect([this] {
+    mDialog->accept();
+  });
+
+  /* Reject the mDialog */
+  cancel->clicked().connect(mDialog, &Wt::WDialog::reject);
+
+  mDialog->setWindowTitle("User Entry");
+
+  mDialog->contents()->clear();
+
+  auto usernameLabel = mDialog->contents()->addNew<Wt::WLabel>("Username");
+  auto usernameEdit = mDialog->contents()->addNew<Wt::WLineEdit>();
+  usernameLabel->setBuddy(usernameEdit);
+
+  /* Process the mDialog result. */
+  mDialog->finished().connect([this, usernameEdit] {
+    if (mDialog->result() == Wt::DialogCode::Accepted)
+    {
+      std::string singer = usernameEdit->text().toUTF8();
+
+      addToSongQueue(singer);
+      removeChild(mDialog);
+    }
+  });
+
+  mDialog->show();
+  mDialog->raiseToFront();
+}
+
+void LibraryWidget::addToSongQueue(const std::string& singer)
+{
+  auto indexes = mTableView->selectedIndexes();
+  if (indexes.size() < 1)
+    return;
+
+  auto iter = indexes.begin();
+  auto item = mModel->item(iter->row(), 0);
+  auto id = item->text().toUTF8();
+
+  auto songPtr = mLibrary.getSong(id);
+  if (!songPtr)
+    return;
+
+  mPlaylist.addDitty(id, singer);
+  auto messageBox = this->addChild(
+      std::make_unique<Wt::WMessageBox>(singer,
+                                        songPtr->getField(Song::kTITLE) + " song added!",
+                                        Wt::Icon::Information,
+                                        Wt::StandardButton::Ok));
+
+  messageBox->buttonClicked().connect([messageBox, this] {
+    this->removeChild(messageBox);
+  });
+  messageBox->show();
 }
