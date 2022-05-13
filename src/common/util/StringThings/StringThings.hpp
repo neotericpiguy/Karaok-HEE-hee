@@ -2,9 +2,9 @@
 #define STRINGTHINGS_HPP
 
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <limits>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>

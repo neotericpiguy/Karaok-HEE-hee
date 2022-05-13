@@ -1,6 +1,7 @@
 #include "StringThings.hpp"
 
 #include <algorithm>
+#include <regex>
 
 namespace StringThings {
 std::string fixed(double number, unsigned int decimals)

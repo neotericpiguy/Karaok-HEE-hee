@@ -1,0 +1,7 @@
+// Additional settings
+dlQueue.setQueueFile("xcurrent");
+dlQueue.setOutputDir("/data/xvid");
+dlQueue.setMaxThreads(4);
+dlQueue.setDownloadCompleteFunc([&library](const std::string&) {
+});
+
