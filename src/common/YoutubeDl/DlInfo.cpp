@@ -1,5 +1,7 @@
 #include "DlInfo.hpp"
 
+#include <array>
+
 #include "StringThings.hpp"
 
 namespace YoutubeDl {

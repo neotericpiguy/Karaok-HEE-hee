@@ -1,0 +1,3 @@
+[submodule "src/common/util"]
+	path = src/common/util
+	url = git@github.com:neotericpiguy/util.git

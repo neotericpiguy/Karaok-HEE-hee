@@ -1,5 +1,6 @@
 #include "DlQueue.hpp"
 
+#include <array>
 #include <iostream>
 
 #include "StringThings.hpp"
