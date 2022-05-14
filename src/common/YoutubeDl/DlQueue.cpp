@@ -240,10 +240,8 @@ void DlQueue::serviceQueue()
     }
 
     info.getThreadFuture();
-    if (mDownloadCompleteFunc)
+    if (auto filename = info.getFilename(); mDownloadCompleteFunc && !filename.empty())
     {
-      auto filename = info.getFilename();
-
       std::string filenameNoExt = filename;
       StringThings::replaceRegex(filenameNoExt, "\\..*$", "");
 
@@ -262,7 +260,7 @@ void DlQueue::serviceQueue()
       StringThings::replace(result, "\r", "");
       StringThings::replace(result, "\n", "");
 
-      std::cout << "Ls: result : " << result << std::endl;
+      std::cout << "Download Complete: " << result << std::endl;
 
       mDownloadCompleteFunc(result);
     }
