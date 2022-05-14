@@ -3,8 +3,6 @@
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WEnvironment.h>
 #include <Wt/WLabel.h>
-#include <Wt/WLineEdit.h>
-#include <Wt/WMenu.h>
 #include <Wt/WMessageBox.h>
 #include <Wt/WNavigationBar.h>
 #include <Wt/WPopupMenu.h>
