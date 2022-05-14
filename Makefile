@@ -34,7 +34,7 @@ DEPS=$(OBJS:%.o=%.d)
 
 COMMON_PATH=src/common
 COMMON_INCPATHS=$(addprefix -I,$(shell find $(COMMON_PATH) -type d))
-COMMON_SRCS=$(wildcard $(COMMON_PATH)/*/*/*.cpp $(COMMON_PATH)/*/*.cpp $(COMMON_PATH)/*.cpp)
+COMMON_SRCS=$(shell find $(COMMON_PATH) -iname "*.cpp")
 COMMON_OBJS=$(addprefix $(BUILD_PATH)/,$(COMMON_SRCS:.cpp=.o))
 DEPS+=$(COMMON_OBJS:%.o=%.d) 
 COMMON_LIB=$(BUILD_PATH)/$(COMMON_PATH)/libcommon.a
