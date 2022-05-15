@@ -16,9 +16,11 @@ Playlist::Playlist(const Library& library) :
     CsvDb::Table("playlist.csv", Ditty::kORDER),
     mLibrary(library),
     mLatestEnum(0),
+    mHostname("localhost"),
     mCurrentState(UNKNOWN),
     mCurrentSongPath(""),
-    mCurrentPoster("")
+    mCurrentPoster(""),
+    mLastDittyText("")
 {
   setNewRecordFunc([]() -> CsvDb::Record* {
     return new Ditty;
@@ -66,6 +68,21 @@ Playlist::Playlist(const Library& library) :
        }},
       {"LATESTENUM?", [this](const Scpi&) -> std::string {
          return std::to_string(mLatestEnum);
+       }},
+      {"HOSTNAME", [this](const Scpi& scpi) -> std::string {
+         auto params = scpi.getParams();
+         if (params.size() != 1)
+           return "no params";
+
+         std::string hostname;
+         scpi.getParam(hostname, 0);
+
+         setHostname(hostname);
+         mLastDittyText = "";
+         return getHostname();
+       }},
+      {"HOSTNAME?", [this](const Scpi&) -> std::string {
+         return getHostname();
        }},
   });
 
@@ -115,6 +132,14 @@ const std::string& Playlist::getCurrentPoster() const
 void Playlist::setCurrentPoster(const std::string& val)
 {
   mCurrentPoster = val;
+}
+const std::string& Playlist::getHostname() const
+{
+  return mHostname;
+}
+void Playlist::setHostname(const std::string& val)
+{
+  mHostname = val;
 }
 
 size_t Playlist::loadTable()
@@ -214,17 +239,16 @@ std::string Playlist::dittyPicture()
   std::string targetPath = "/usr/share/Wt";
   std::string targetFile = "pics/target" + std::to_string(rand()) + ".jpg";
   std::string targetFilename = targetPath + "/" + targetFile;
+  std::string qrFile = targetPath + "/pics/qrCode.png";
 
   auto results = songList();
   results.resize(5);
-
-  static std::string dittyText;
 
   std::string text = StringThings::vecToStr(results, "\n");
   if (text.empty())
     text = "Empty Playlist...";
 
-  if (text != dittyText)
+  if (text != mLastDittyText)
   {
     std::string cmd = "convert -size 2560x1080 xc:black " + targetFilename;
     system(cmd.c_str());
@@ -233,7 +257,15 @@ std::string Playlist::dittyPicture()
     cmd = "convert -pointsize 80 -fill white -draw 'text 60,100 \"" + fileText + "\"' " + targetFilename + " " + targetFilename;
     system(cmd.c_str());
 
-    dittyText = text;
+    // Generate qr code
+    cmd = "qrencode -s10 -o " + qrFile + " '" + getHostname() + "'";
+    std::cout << "cmd: " << cmd << std::endl;
+    system(cmd.c_str());
+
+    cmd = "convert " + targetFilename + " " + qrFile + " -gravity northeast -geometry +10+10 -composite " + targetFilename;
+    system(cmd.c_str());
+
+    mLastDittyText = text;
     mCurrentPoster = targetFile;
   }
 

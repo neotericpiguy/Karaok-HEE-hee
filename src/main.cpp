@@ -68,12 +68,19 @@ int main(int argc, char** argv)
 
   server.start();
 
-  if (argc == 2 && std::string(argv[1]) == "server")
+  if (argc >= 2)
   {
-    std::cout << "Starting tcp server..." << std::endl;
-    std::string temp;
-    std::getline(std::cin, temp);
-    return 0;
+    if (std::string(argv[1]) == "server")
+    {
+      std::cout << "Starting tcp server..." << std::endl;
+      std::string temp;
+      std::getline(std::cin, temp);
+      return 0;
+    }
+    else
+    {
+      playlist.setHostname(argv[1]);
+    }
   }
 
   return Wt::WRun(argc, argv, [&server, &dlQueue, &library, &authenticator, &playlist](const Wt::WEnvironment& env) {
