@@ -69,9 +69,11 @@ $(BUILD_PATH)/%.o: %.cpp
 	$(CC) -o $@ -c $(CFLAGS) $(LIBUSB_INCPATHS) $(COMMON_INCPATHS) $(WIDGETS_INCPATHS) $<
 
 $(COMMON_LIB): $(COMMON_OBJS)
+	@echo -e "\e[032mLinking $@\e[0m"
 	ar -rcs $@ $^
 
 $(WIDGETS_LIB): $(WIDGETS_OBJS)
+	@echo -e "\e[032mLinking $@\e[0m"
 	ar -rcs $@ $^
 
 $(BUILD_PATH)/$(EXE): $(OBJS) $(COMMON_LIB) $(WIDGETS_LIB)
