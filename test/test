@@ -83,10 +83,12 @@ reloadLibrary() {
 playlist() {
   queryTest "PLAYLIST:PRINT"
 #  queryTest "PLAYLIST:LOAD"
-  queryTest "PLAYLIST:ADD 07f487a0b5662f5f9889cf0e0698b8bf0655a5048284205988cef34148d44256 ThisIsJonathan"
+#  queryTest "PLAYLIST:ADD 07f487a0b5662f5f9889cf0e0698b8bf0655a5048284205988cef34148d44256 ThisIsJonathan"
   queryTest "PLAYLIST:PRINT"
   queryTest "PLAYLIST:NEXTSONG"
   queryTest "PLAYLIST:STATE?"
+  queryTest "PLAYLIST:HOSTNAME http://dellbox:18080"
+  queryTest "PLAYLIST:HOSTNAME?"
 }
 
 state() {

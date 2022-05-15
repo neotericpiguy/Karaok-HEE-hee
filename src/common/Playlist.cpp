@@ -16,6 +16,7 @@ Playlist::Playlist(const Library& library) :
     CsvDb::Table("playlist.csv", Ditty::kORDER),
     mLibrary(library),
     mLatestEnum(0),
+    mHostname("localhost"),
     mCurrentState(UNKNOWN),
     mCurrentSongPath(""),
     mCurrentPoster("")
@@ -67,6 +68,20 @@ Playlist::Playlist(const Library& library) :
       {"LATESTENUM?", [this](const Scpi&) -> std::string {
          return std::to_string(mLatestEnum);
        }},
+      {"HOSTNAME", [this](const Scpi& scpi) -> std::string {
+         auto params = scpi.getParams();
+         if (params.size() != 1)
+           return "no params";
+
+         std::string hostname;
+         scpi.getParam(hostname, 0);
+
+         setHostname(hostname);
+         return getHostname();
+       }},
+      {"HOSTNAME?", [this](const Scpi&) -> std::string {
+         return getHostname();
+       }},
   });
 
   setNewFileHeader({
@@ -115,6 +130,14 @@ const std::string& Playlist::getCurrentPoster() const
 void Playlist::setCurrentPoster(const std::string& val)
 {
   mCurrentPoster = val;
+}
+const std::string& Playlist::getHostname() const
+{
+  return mHostname;
+}
+void Playlist::setHostname(const std::string& val)
+{
+  mHostname = val;
 }
 
 size_t Playlist::loadTable()

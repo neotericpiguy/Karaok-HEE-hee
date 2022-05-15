@@ -28,6 +28,9 @@ public:
   size_t getLatestEnum() const;
   void setLatestEnum(size_t val);
 
+  const std::string& getHostname() const;
+  void setHostname(const std::string& val);
+
   size_t loadTable() override;
 
   bool addDitty(const std::string& songHash, const std::string& singer);
@@ -51,6 +54,7 @@ public:
 private:
   const Library& mLibrary;
   size_t mLatestEnum;
+  std::string mHostname;
 
   State mCurrentState;
   std::string mCurrentSongPath;
