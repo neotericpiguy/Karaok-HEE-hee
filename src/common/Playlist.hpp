@@ -59,6 +59,7 @@ private:
   State mCurrentState;
   std::string mCurrentSongPath;
   std::string mCurrentPoster;
+  std::string mLastDittyText;
 };
 
 #endif

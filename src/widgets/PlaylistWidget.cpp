@@ -139,6 +139,16 @@ void PlaylistWidget::stateMachine()
   // If you are a DJ instance.
   if ((*mUser)->hasRole("DJ") && mVideo)
   {
+    if (getState() == Playlist::INIT)
+    {
+      mVideo->pause();
+      mPlaylist.updateQueue(false);
+      mVideo->clearSources();
+      mVideo->addSource(Wt::WLink(mPlaylist.getCurrentSongPath()));
+      mVideo->setPoster(mPlaylist.getCurrentPoster());
+      mVideoStarted = false;
+    }
+
     // Not also a singer
     if (!(*mUser)->hasRole("Singer"))
     {
