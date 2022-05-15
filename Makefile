@@ -78,7 +78,7 @@ $(BUILD_PATH)/$(EXE): $(OBJS) $(COMMON_LIB) $(WIDGETS_LIB)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 run: $(BUILD_PATH)/$(EXE)
-	./$^  --docroot="/usr/share/Wt"  --http-listen=0.0.0.0:$(PORT) -c wt_config.xml
+	./$^ 'localhost' --docroot="/usr/share/Wt" --http-listen=0.0.0.0:$(PORT) -c wt_config.xml
 
 server: $(BUILD_PATH)/$(EXE)
 	./$^ server
