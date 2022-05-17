@@ -11,7 +11,11 @@ CFLAGS   += -g -O -Wall -Werror -fPIC -MMD -fcommon
 CFLAGS   += -DVERSION='"$(VERSION)"'
 
 EFFCFLAGS+=-Wall
-EFFCFLAGS+=-Wextra -Werror -Wshadow 
+
+# TODO disable because gcc 12.1.0 is weird
+#EFFCFLAGS+=-Wextra -Werror -Wshadow 
+
+EFFCFLAGS+=-Wno-error=maybe-uninitialized
 EFFCFLAGS+=-Weffc++ # extreme OCD C++ not recommended
 #warn the user if a class with virtual functions has a non-virtual destructor.
 #This helps catch hard to track down memory errors
@@ -27,7 +31,6 @@ CFLAGS   += -std=c++20 $(EFFCFLAGS)
 CXXFLAGS += $(CFLAGS)
 LIBS     += -lwthttp -lwt
 
-#SRCS=$(shell find src/ -name '*.cpp')
 SRCS=$(wildcard src/*.cpp)
 OBJS=$(addprefix $(BUILD_PATH)/,$(SRCS:.cpp=.o))
 DEPS=$(OBJS:%.o=%.d) 
