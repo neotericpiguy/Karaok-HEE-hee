@@ -80,6 +80,7 @@ $(WIDGETS_LIB): $(WIDGETS_OBJS)
 	ar -rcs $@ $^
 
 $(BUILD_PATH)/$(EXE): $(OBJS) $(COMMON_LIB) $(WIDGETS_LIB)
+	@echo -e "\e[032mBuilding $@\e[0m"
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 run: $(BUILD_PATH)/$(EXE)
